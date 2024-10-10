@@ -1,7 +1,19 @@
-import { AppShell, Burger, Group, UnstyledButton } from "@mantine/core";
-import { Link, Outlet } from "react-router-dom";
+import {
+  AppShell,
+  AppShellFooter,
+  Burger,
+  Group,
+  UnstyledButton,
+  Text,
+  Center,
+  Flex,
+  TextInput,
+  Button,
+} from "@mantine/core";
+import { Link, Outlet, Route, Router, Routes } from "react-router-dom";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "./style.module.css";
+import { Home } from "../home/Home";
 
 export default function RootLayouyt() {
   const [opened, { toggle }] = useDisclosure();
@@ -16,6 +28,7 @@ export default function RootLayouyt() {
           collapsed: { desktop: true, mobile: !opened },
         }}
         padding="md"
+        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
       >
         <AppShell.Header>
           <Group h="100%" px="md">
@@ -25,38 +38,92 @@ export default function RootLayouyt() {
               hiddenFrom="sm"
               size="sm"
             />
-            <Group justify="space-between" style={{ flex: 1 }}>
-              {/* <MantineLogo size={30} /> */}
+            <Group justify="space-between" align="center" style={{ flex: 1 }}>
               <Group ml="xl" gap={0} visibleFrom="sm">
-                <Link to="/home"> 
-                <UnstyledButton className={classes.control}>
-                  HomEEe
-                </UnstyledButton>
+                <Link to="/home">
+                  <UnstyledButton className={classes.control}>
+                    Home
+                  </UnstyledButton>
                 </Link>
-                <UnstyledButton className={classes.control}>
-                  Blog
-                </UnstyledButton>
-                <UnstyledButton className={classes.control}>
-                  Contacts
-                </UnstyledButton>
-                <UnstyledButton className={classes.control}>
-                  Support
-                </UnstyledButton>
+                <Link to="/Galeria">
+                  <UnstyledButton className={classes.control}>
+                    Galeria de Artes
+                  </UnstyledButton>
+                </Link>
+                <Link to="/Artesanatos">
+                  <UnstyledButton className={classes.control}>
+                    Artesanatos
+                  </UnstyledButton>
+                </Link>
+                <Link to="/Artesaos">
+                  <UnstyledButton className={classes.control}>
+                    Artesãos
+                  </UnstyledButton>
+                </Link>
+                <Link to="/Comunidade">
+                  <UnstyledButton className={classes.control}>
+                    Comunidade
+                  </UnstyledButton>
+                </Link>
+                <Link to="/CadastroUsuario">
+                  <UnstyledButton className={classes.control}>
+                    Cadastro Usuario
+                  </UnstyledButton>
+                </Link>
+                <Link to="/Login">
+                  <UnstyledButton className={classes.control}>
+                    Login
+                  </UnstyledButton>
+                </Link>
               </Group>
             </Group>
           </Group>
         </AppShell.Header>
 
-        <AppShell.Navbar py="md" px={4}>
+        <AppShell.Navbar py="md" px={5}>
           <UnstyledButton className={classes.control}>Home</UnstyledButton>
-          <UnstyledButton className={classes.control}>Blog</UnstyledButton>
-          <UnstyledButton className={classes.control}>Contacts</UnstyledButton>
-          <UnstyledButton className={classes.control}>Support</UnstyledButton>
+          <UnstyledButton className={classes.control}>
+            Galeria de Artes
+          </UnstyledButton>
+          <UnstyledButton className={classes.control}>
+            Artesanatos
+          </UnstyledButton>
+          <UnstyledButton className={classes.control}>Artesãos</UnstyledButton>
+          <UnstyledButton className={classes.control}>
+            Comunidade
+          </UnstyledButton>
         </AppShell.Navbar>
 
-        <AppShell.Main>
+        <AppShell.Main mb="xl" style={{ flex: 1 }}>
           <Outlet />
         </AppShell.Main>
+
+        <AppShellFooter pos={"static"}>
+          <Center p="lg" style={{ backgroundColor: "Gray" }}>
+            <Group>
+              <Text w={150}>Cadastre-se e receba todas as novidades!</Text>
+              <TextInput
+                w={300}
+                radius="md"
+                placeholder="seuemail@email.com.br"
+              />
+              <Button radius="md">Cadastre-se</Button>
+            </Group>
+          </Center>
+          <Flex justify="space-between" align="center" mt="xl" mb="xl">
+            <Text ml="lg" mr="lg">
+              © 2024 PROTÓTIPO. Todos os direitos reservados.
+            </Text>
+            <Group>
+              <Text ml="lg" mr="lg">
+                Termos de Uso
+              </Text>
+              <Text ml="lg" mr="lg">
+                Política de Privacidade
+              </Text>
+            </Group>
+          </Flex>
+        </AppShellFooter>
       </AppShell>
     </>
   );

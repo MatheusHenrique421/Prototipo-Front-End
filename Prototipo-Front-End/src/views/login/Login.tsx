@@ -5,7 +5,6 @@ import {
   TextInput,
   Text,
   PasswordInput,
-  Radio,
   SimpleGrid,
   Anchor,
   Group,
@@ -52,8 +51,7 @@ export default function Login() {
               <div>
                 <hr />
               </div>
-              <Center>
-                {/* quando cadastrar e redirecionar a tela diretamente para terminar o cadastro.. */}
+              <Center>               
                 <Link to="/CadastroUsuario">
                   <Text>Criar uma nova conta</Text>
                 </Link>

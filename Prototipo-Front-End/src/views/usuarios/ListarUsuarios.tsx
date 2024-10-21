@@ -1,10 +1,13 @@
-import { Container, Table, Loader, Text, TableData } from "@mantine/core";
+import { Container, Table, Loader, Text, Checkbox } from "@mantine/core";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 interface UsuarioModel {
   id: number;
   nome: string;
+  cpf: string;
+  email: string;
+  receberEmail: boolean;
 }
 export default function ListarUsuarios() {
   const [usuarios, setUsuarios] = useState<UsuarioModel[]>([]);
@@ -52,13 +55,16 @@ export default function ListarUsuarios() {
   }, []);
 
   // Renderiza as linhas da tabela
-  const rows = usuarios.map((usuario) => (usuario.id, usuario.nome));
-
-  const tableData = {
-    caption: "Some elements from periodic table",
-    head: ["Id", "Nome"],
-    body: [rows],
-  };
+  const rows = usuarios.map((usuario) => (
+    <Table.Tr key={usuario.nome}>
+      <Table.Td>{usuario.nome}</Table.Td>
+      <Table.Td>{usuario.cpf}</Table.Td>
+      <Table.Td>{usuario.email}</Table.Td>
+      <Table.Td>
+        <Checkbox checked={usuario.receberEmail} readOnly />
+      </Table.Td>
+    </Table.Tr>
+  ));
 
   return (
     <section>
@@ -66,30 +72,22 @@ export default function ListarUsuarios() {
         <Text size="xl" mb="lg">
           Lista de Usuários
         </Text>
-        {/* Verifica se está carregando */}
+
         {loading ? (
-          <Loader size="lg" />
+          <Loader size="xl" />
         ) : error ? (
           <Text c="red">{error}</Text>
         ) : (
-          <Table>
-            <caption>{tableData.caption}</caption>
-            <thead>
-              <tr>
-                {tableData.head.map((header, index) => (
-                  <th key={index}>{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.body.map((row, index) => (
-                <tr key={index}>
-                  {row.map((cell, cellIndex) => (
-                    <td key={cellIndex}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
+          <Table striped highlightOnHover withTableBorder withColumnBorders>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Nome</Table.Th>
+                <Table.Th>CPF</Table.Th>
+                <Table.Th>E-mail</Table.Th>
+                <Table.Th>Receber E-mail</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
           </Table>
         )}
       </Container>

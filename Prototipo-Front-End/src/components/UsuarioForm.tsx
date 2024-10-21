@@ -11,6 +11,7 @@ import {
   Radio,
   Button,
   InputBase,
+  Checkbox,
 } from "@mantine/core";
 import { Link } from "react-router-dom";
 
@@ -21,7 +22,7 @@ const UsuarioForm: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [confirmaEmail, setConfirmaEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
-  const [receberEmail, setReceberEmail] = useState<boolean>(false);
+  const [receberEmail, setReceberEmail] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent) => {
@@ -135,8 +136,8 @@ const UsuarioForm: React.FC = () => {
                 id="receberEmail"
                 label="Quero receber novidades no e-mail."
                 value={String(receberEmail)}
-                onChange={(e) => setReceberEmail(e.target.value === "true")}
-                required
+                checked={receberEmail}
+                onChange={(e) => setReceberEmail(e.currentTarget.checked)}
               />
               <Button type="submit" radius="md">
                 Cadastrar

@@ -2,10 +2,10 @@ import { createBrowserRouter } from "react-router-dom";
 import { Home } from "./views/home/Home";
 import Artesanatos from "./views/artesanatos/Artesanatos";
 import CadastroUsuario from "./views/usuarios/CadastroUsuario";
-
 import RootLayout from "./views/root/RootLayout";
 import ListarUsuarios from "./views/usuarios/ListarUsuarios";
 import Login from "./views/login/Login";
+import EditarUsuario from "./views/usuarios/EditarUsuario";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +35,11 @@ const router = createBrowserRouter([
         index: true,
         path: "/ListarUsuarios",
         element: <ListarUsuarios />,
+      },
+      {
+        index: true,
+        path: "/EditarUsuario",
+        element: <EditarUsuario />,
       },
     ],
   },

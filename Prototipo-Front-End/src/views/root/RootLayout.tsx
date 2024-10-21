@@ -75,6 +75,16 @@ export default function RootLayouyt() {
                     Login
                   </UnstyledButton>
                 </Link>
+                <Link to="/ListarUsuarios">
+                  <UnstyledButton className={classes.control}>
+                  ListarUsuarios
+                  </UnstyledButton>
+                </Link>
+                <Link to="/EditarUsuario">
+                  <UnstyledButton className={classes.control}>
+                  EditarUsuarios
+                  </UnstyledButton>
+                </Link>
               </Group>
             </Group>
           </Group>

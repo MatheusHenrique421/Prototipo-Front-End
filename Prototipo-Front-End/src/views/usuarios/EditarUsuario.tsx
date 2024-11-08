@@ -8,12 +8,10 @@ import {
   Modal,
   TextInput,
   Group,
-  Alert,
   InputBase,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { IMaskInput } from "react-imask";
 
 interface UsuarioModel {
   id: number;
@@ -27,7 +25,6 @@ export default function EditarUsuario() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [editingUsuario, setEditingUsuario] = useState<UsuarioModel | null>(null); // Usuário sendo editado
-  const [deleteUsuarioId, setDeleteUsuarioId] = useState<number | null>(null); // Usuário sendo deletado
   const [showModal, setShowModal] = useState<boolean>(false); // Modal para edição
 
   // Faz a requisição para buscar os usuários da API
@@ -173,11 +170,10 @@ export default function EditarUsuario() {
             radius="md"
             label="CPF:"
             placeholder="CPF"
-            id="CPF"
-            typeof="number"
+            id="CPF"            
             value={editingUsuario?.cpf || ""}
-            component={IMaskInput}
-            mask="000.000.000-00"
+            //component={IMaskInput}
+            //mask="000.000.000-00"
             onChange={(e) =>
               setEditingUsuario((prev) =>
                 prev ? { ...prev, cpf: e.target.value } : null

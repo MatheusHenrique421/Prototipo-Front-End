@@ -11,7 +11,6 @@ import {
   Radio,
   Button,
   InputBase,
-  Checkbox,
 } from "@mantine/core";
 import { Link } from "react-router-dom";
 
@@ -23,7 +22,7 @@ const UsuarioForm: React.FC = () => {
   const [confirmaEmail, setConfirmaEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
   const [receberEmail, setReceberEmail] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();

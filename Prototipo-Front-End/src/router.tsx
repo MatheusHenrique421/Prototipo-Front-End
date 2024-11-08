@@ -6,12 +6,11 @@ import RootLayout from "./views/root/RootLayout";
 import ListarUsuarios from "./views/usuarios/ListarUsuarios";
 import Login from "./views/login/Login";
 import EditarUsuario from "./views/usuarios/EditarUsuario";
+import ListarArtesaos from "./views/artesaos/ListarArtesaos";
+import CadastroArtesao from "./views/artesaos/CadastroArtesao";
+import ExibirArtesao from "./views/artesaos/ExibirArtesao";
 
 const router = createBrowserRouter([
-  {
-    path: "/Login",
-    element: <Login />,
-  },
   {
     index: true,
     path: "/CadastroUsuario",
@@ -19,30 +18,61 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <RootLayout />,
-    children: [
-      {
-        index: true,
-        path: "/Home",
-        element: <Home />,
-      },
-      {
-        index: true,
-        path: "/Artesanatos",
-        element: <Artesanatos />,
-      },
-      {
-        index: true,
-        path: "/ListarUsuarios",
-        element: <ListarUsuarios />,
-      },
-      {
-        index: true,
-        path: "/EditarUsuario",
-        element: <EditarUsuario />,
-      },
-    ],
+    element: <Login />,
   },
+
+  {
+    path: "/Index",
+    element: <RootLayout />,
+  },
+  {
+    index: true,
+    path: "/Home",
+    element: <Home />,
+  },
+  {
+    index: true,
+    path: "/Artesanatos",
+    element: <Artesanatos />,
+  },
+  {
+    index: true,
+    path: "/ListarArtesaos",
+    element: <ListarArtesaos />,
+  },
+
+  {
+    index: true,
+    path: "/CadastroArtesao",
+    element: <CadastroArtesao />,
+  },
+  {
+    index: true,
+    path: "/ExibirArtesao",
+    element: <ExibirArtesao />,
+  },
+  {
+    index: true,
+    path: "/ListarUsuarios",
+    element: <ListarUsuarios />,
+  },
+  {
+    index: true,
+    path: "/EditarUsuario",
+    element: <EditarUsuario />,
+  },
+
+  // {
+  //   path: "/",
+  //   element: (
+  //     <AuthContext.Provider value={{ ... }}>
+  //       <RootLayout />
+  //     </AuthContext.Provider>
+  //   ),
+  //   children: [
+  //     // ... outras rotas
+  //   ],
+  // },
 ]);
 
 export default router;

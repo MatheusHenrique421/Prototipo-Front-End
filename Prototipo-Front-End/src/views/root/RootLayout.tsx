@@ -10,10 +10,9 @@ import {
   TextInput,
   Button,
 } from "@mantine/core";
-import { Link, Outlet, Route, Router, Routes } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "./style.module.css";
-import { Home } from "../home/Home";
 
 export default function RootLayouyt() {
   const [opened, { toggle }] = useDisclosure();
@@ -55,7 +54,7 @@ export default function RootLayouyt() {
                     Artesanatos
                   </UnstyledButton>
                 </Link>
-                <Link to="/Artesaos">
+                <Link to="/ListarArtesaos">
                   <UnstyledButton className={classes.control}>
                     Artesãos
                   </UnstyledButton>
@@ -77,12 +76,12 @@ export default function RootLayouyt() {
                 </Link>
                 <Link to="/ListarUsuarios">
                   <UnstyledButton className={classes.control}>
-                  ListarUsuarios
+                    ListarUsuarios
                   </UnstyledButton>
                 </Link>
                 <Link to="/EditarUsuario">
                   <UnstyledButton className={classes.control}>
-                  EditarUsuarios
+                    EditarUsuarios
                   </UnstyledButton>
                 </Link>
               </Group>

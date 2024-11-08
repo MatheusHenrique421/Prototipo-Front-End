@@ -1,28 +1,33 @@
+import { ArtesaoModel } from "../models/ArtesaoModel";
+import { LoginModel } from './../models/LoginModel';
 import axios, { AxiosError } from "axios";
 
-const API_URL = "https://localhost:7215/api/Usuario";
+const API_URL = "https://localhost:7215/api";
 
-interface LoginResponse {
-    token: string;
-    // adicione quaisquer outros campos que você está esperando na resposta
-}
-
-interface Credenciais {
-    email: string;
-    senha: string;
-}
-
-export const loginUsuario = async (credenciais: Credenciais): Promise<LoginResponse> => {
+// Função genérica para fazer requisição para qualquer endpoint
+const apiRequest = async (route: string, data: any = null) => {
     try {
-        const response = await axios.post<LoginResponse>(`${API_URL}/login`, credenciais);
-        // Armazenar o token JWT ou outra resposta de sucesso
-        localStorage.setItem("token", response.data.token);
+        const url = `${API_URL}/${route}`;
+
+        // Se houver dados, fazemos uma requisição POST
+        if (data) {
+            const response = await axios.post(url, data, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            return response.data;
+        }
+
+        // Caso contrário, fazemos uma requisição GET
+        const response = await axios.get(url);
         return response.data;
+
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const axiosError = error as AxiosError;
 
-            // Verificar se é um erro de credenciais incorretas
+            // Tratamento específico de erros baseados no status da resposta
             if (axiosError.response?.status === 401) {
                 console.error("Credenciais incorretas.");
                 throw new Error("Credenciais incorretas. Por favor, tente novamente.");
@@ -30,8 +35,8 @@ export const loginUsuario = async (credenciais: Credenciais): Promise<LoginRespo
                 console.error("Erro interno no servidor.");
                 throw new Error("Erro interno no servidor. Por favor, tente novamente mais tarde.");
             } else {
-                console.error("Erro ao fazer login:", error.message);
-                throw new Error("Erro ao fazer login. Verifique sua conexão e tente novamente.");
+                console.error("Erro ao fazer requisição:", error.message);
+                throw new Error("Erro ao fazer a requisição. Verifique sua conexão e tente novamente.");
             }
         } else {
             console.error("Erro inesperado:", error);
@@ -40,7 +45,28 @@ export const loginUsuario = async (credenciais: Credenciais): Promise<LoginRespo
     }
 };
 
+// Função de Login do usuário
+export const loginUsuario = async (login: LoginModel) => {
+    const response = await apiRequest("Authentication/login", login);
+
+    response.token
+    localStorage.setItem("token", response.token);
+    // // Armazenar o token JWT, se a autenticação for bem-sucedida
+    // if (response.token) {
+    //     localStorage.setItem("token", response.token);
+    // } else {
+    //     console.warn("Nenhum token retornado pela API.");
+    //     throw new Error("Erro ao autenticar. Por favor, verifique suas credenciais.");
+    // }
+    return response;
+};
+
+// Função de cadastro do usuário
 export const cadastrarUsuario = async (usuario: { id: number; nome: string }) => {
-    const response = await axios.post(API_URL, usuario);
-    return response.data;
+    return apiRequest("usuario", usuario);
+};
+
+// Função de cadastro do artesão
+export const cadastrarArtesao = async (artesao: ArtesaoModel) => {
+    return apiRequest("artesao", artesao);
 };

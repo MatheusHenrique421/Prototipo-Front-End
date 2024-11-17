@@ -34,10 +34,10 @@ export default function Login() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-
+    
     try {
       const data = await loginUsuario(login);
-      navigate("/CadastroArtesao");
+      navigate("/CadastrarArtesao");
       alert("Login realizado com sucesso!");
       console.log("Login bem sucedido!", data);
       // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
@@ -96,7 +96,7 @@ export default function Login() {
                 <hr />
               </div>
               <Center>
-                <Link to="/CadastroUsuario">
+                <Link to="/CadastrarUsuario">
                   <Text>Criar uma nova conta</Text>
                 </Link>
               </Center>

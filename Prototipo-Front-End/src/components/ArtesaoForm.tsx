@@ -1,47 +1,44 @@
+import { ArtesaoModel } from "../models/ArtesaoModel";
+import { cadastrarArtesao } from "../services/Api";
+import { useState, FormEvent } from "react";
+import { IMaskInput } from "react-imask";
 import {
-  Avatar,
-  Button,
-  Center,
-  Checkbox,
   Container,
+  Center,
   Fieldset,
+  SimpleGrid,
+  Avatar,
   FileInput,
   InputBase,
-  SimpleGrid,
-  Text,
   Textarea,
+  Checkbox,
   TextInput,
+  Button,
+  Text,
 } from "@mantine/core";
-import { IMaskInput } from "react-imask";
-import React, { FormEvent, useState } from "react";
-import { cadastrarArtesao } from "../../services/Api";
-import { ArtesaoModel } from "../../models/ArtesaoModel";
 
-const initialArtesaoState: ArtesaoModel = {
-  id: 0,
-  nomeArtesao: "",
-  telefone: "",
-  whatsApp: "",
-  descricaoPerfil: "",
-  usuarioId: 543251,
-  categoriaArtesanato: "",
-  receberEncomendas: false,
-  enviaEncomendas: false,
-  imagemPerfil: "",
-  CEP: "",
-  estado: "",
-  cidade: "",
-  rua: "",
-  bairro: "",
-  complemento: "",
-  numero: "",
-  semNumero: false,
-};
-
-export default function CadastroArtesao() {
-  // State do artesão
-  const [artesao, setArtesao] = useState<ArtesaoModel>(initialArtesaoState);
+const ArtesaoForm: React.FC = () => {
   const [, setErrorMessage] = useState<string>("");
+  const [artesao, setArtesao] = useState<ArtesaoModel>({
+    id: "",
+    nomeArtesao: "",
+    telefone: "",
+    whatsApp: "",
+    descricaoPerfil: "",
+    usuarioId: "",    
+    receberEncomendas: false,
+    enviaEncomendas: false,
+    imagemPerfil: "",
+    fotoUrl: "",
+    CEP: "",
+    estado: "",
+    cidade: "",
+    rua: "",
+    bairro: "",
+    complemento: "",
+    numero: "",
+    semNumero: false,
+  });
 
   // Função que busca as informações do CEP
   const buscarCep = async () => {
@@ -83,7 +80,7 @@ export default function CadastroArtesao() {
     if (file) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-  
+
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
           // Atualiza o estado com a string base64 da imagem
@@ -91,6 +88,7 @@ export default function CadastroArtesao() {
             ...artesao,
             imagemPerfil: reader.result,
           });
+          console.log(file);
         }
       };
     } else {
@@ -152,59 +150,27 @@ export default function CadastroArtesao() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    const artesaoData = {
-      id: artesao.id,
-      usuarioId: artesao.usuarioId,
-      nomeArtesao: artesao.nomeArtesao,
-      telefone: artesao.telefone,
-      whatsApp: artesao.whatsApp,
-      descricaoPerfil: artesao.descricaoPerfil,
-      categoriaArtesanato: artesao.categoriaArtesanato,
-      receberEncomendas: artesao.receberEncomendas,
-      enviaEncomendas: artesao.enviaEncomendas,
-      imagemPerfil: artesao.imagemPerfil,
-      CEP: artesao.CEP,
-      estado: artesao.estado,
-      cidade: artesao.cidade,
-      rua: artesao.rua,
-      bairro: artesao.bairro,
-      complemento: artesao.complemento,
-      numero: artesao.numero,
-      semNumero: artesao.semNumero,
-    };
+    console.log("Tentando cadastrar Artesão:", JSON.stringify(artesao, null, 2));        
 
-    try {
-      const data = await cadastrarArtesao(artesaoData);
-      console.log(data);
+    try {      
+      const data = await cadastrarArtesao(artesao);
+      
+      console.log("Usuário cadastrado com sucesso. Dados retornados da API:", JSON.stringify(data, null, 2));
+      
       alert("Artesão cadastrado com sucesso!");
-      console.log(artesaoData);
     } catch (error: any) {
+        setErrorMessage(error.message);
+        
       console.log("Tamanho da string base64:", artesao.imagemPerfil.length);
-
-      console.error("Erro ao enviar os dados5456456:", error);
-      console.log(artesaoData);
-
-      if (error.code === "ERR_NETWORK") {
-        setErrorMessage(
-          "Erro de rede: Não foi possível conectar à API. Verifique sua conexão ou se o servidor está rodando."
-        );
-        console.log(artesaoData);
-      } else if (error.response) {
-        setErrorMessage(
-          `Erro: ${error.response.status} - ${error.response.data}`
-        );
-        console.log(artesaoData);
-      } else {
-        setErrorMessage("Ocorreu um erro inesperado ao cadastrar o artesão.");
-        console.log(artesaoData);
-      }
+      console.error("Erro ao cadastrar Artesão:", error.message || error);
+      console.log(artesao);    
     }
   };
 
   return (
     <section>
       <Container>
-        <Text>CadastroArtesao</Text>
+        <Text>Cadastrar Artesão</Text>
         <Center>
           <form onSubmit={handleSubmit}>
             <Fieldset legend="Informações do Artesão">
@@ -222,6 +188,7 @@ export default function CadastroArtesao() {
                     id="imagemPerfil"
                     onChange={handleFileChange}
                     multiple={false}
+                    accept="image/png,image/jpeg"
                   />
                 </SimpleGrid>
               </Center>
@@ -385,4 +352,6 @@ export default function CadastroArtesao() {
       </Container>
     </section>
   );
-}
+};
+
+export default ArtesaoForm;

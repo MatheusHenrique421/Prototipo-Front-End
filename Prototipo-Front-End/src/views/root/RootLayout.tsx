@@ -9,6 +9,7 @@ import {
   Flex,
   TextInput,
   Button,
+  Menu,
 } from "@mantine/core";
 import { Link, Outlet } from "react-router-dom";
 import { useDisclosure } from "@mantine/hooks";
@@ -38,52 +39,98 @@ export default function RootLayouyt() {
               size="sm"
             />
             <Group justify="space-between" align="center" style={{ flex: 1 }}>
-              <Group ml="xl" gap={0} visibleFrom="sm">
-                <Link to="/home">
-                  <UnstyledButton className={classes.control}>
-                    Home
-                  </UnstyledButton>
-                </Link>
-                <Link to="/Galeria">
-                  <UnstyledButton className={classes.control}>
-                    Galeria de Artes
-                  </UnstyledButton>
-                </Link>
-                <Link to="/Artesanatos">
-                  <UnstyledButton className={classes.control}>
-                    Artesanatos
-                  </UnstyledButton>
-                </Link>
-                <Link to="/ListarArtesaos">
-                  <UnstyledButton className={classes.control}>
-                    Artesãos
-                  </UnstyledButton>
-                </Link>
-                <Link to="/Comunidade">
-                  <UnstyledButton className={classes.control}>
-                    Comunidade
-                  </UnstyledButton>
-                </Link>
-                <Link to="/CadastroUsuario">
-                  <UnstyledButton className={classes.control}>
-                    Cadastro Usuario
-                  </UnstyledButton>
-                </Link>
-                <Link to="/Login">
-                  <UnstyledButton className={classes.control}>
-                    Login
-                  </UnstyledButton>
-                </Link>
-                <Link to="/ListarUsuarios">
-                  <UnstyledButton className={classes.control}>
-                    ListarUsuarios
-                  </UnstyledButton>
-                </Link>
-                <Link to="/EditarUsuario">
-                  <UnstyledButton className={classes.control}>
-                    EditarUsuarios
-                  </UnstyledButton>
-                </Link>
+              <Group align="center" gap={0} visibleFrom="sm">
+                <UnstyledButton
+                  ml="300px"
+                  component={Link}
+                  to="/Home"
+                  className={classes.control}
+                >
+                  Home
+                </UnstyledButton>
+
+                <UnstyledButton
+                  component={Link}
+                  to="/Galeria"
+                  className={classes.control}
+                >
+                  Galeria de Artes
+                </UnstyledButton>
+
+                <UnstyledButton
+                  component={Link}
+                  to="/Artesanatos"
+                  className={classes.control}
+                >
+                  Artesanatos
+                </UnstyledButton>
+
+                {/* Menu Dropdown */}
+                <Menu>
+                  <Menu.Target>
+                    <UnstyledButton className={classes.control}>
+                      Artesão
+                    </UnstyledButton>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item component={Link} to="/Artesanatos">
+                      Artesanatos
+                    </Menu.Item>
+                    <Menu.Item component={Link} to="/CadastrarArtesao">
+                      Cadastrar Artesãos
+                    </Menu.Item>
+                    <Menu.Item component={Link} to="/ListarArtesaos">
+                      Exibir Artesão
+                    </Menu.Item>
+                    <Menu.Item component={Link} to="/ListarArtesaos">
+                      Artesãos
+                    </Menu.Item>
+                    <Menu.Item component={Link} to="/Comunidade">
+                      Comunidade
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+
+                <UnstyledButton
+                  component={Link}
+                  to="/Comunidade"
+                  className={classes.control}
+                >
+                  Comunidade
+                </UnstyledButton>
+
+                <UnstyledButton
+                  component={Link}
+                  to="/CadastrarUsuario"
+                  className={classes.control}
+                >
+                  Cadastro Usuario
+                </UnstyledButton>
+
+                <UnstyledButton
+                  component={Link}
+                  to="/ListarUsuarios"
+                  className={classes.control}
+                >
+                  ListarUsuarios
+                </UnstyledButton>
+
+                <UnstyledButton
+                  component={Link}
+                  to="/EditarUsuario"
+                  className={classes.control}
+                >
+                  EditarUsuarios
+                </UnstyledButton>
+
+                <UnstyledButton
+                  // ml="300px"
+                  component={Link}
+                  to="/Login"
+                  className={classes.control}
+                >
+                  Login
+                </UnstyledButton>
               </Group>
             </Group>
           </Group>

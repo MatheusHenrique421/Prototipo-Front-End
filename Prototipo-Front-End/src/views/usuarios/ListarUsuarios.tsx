@@ -1,13 +1,15 @@
 import { Container, Table, Loader, Text, Checkbox } from "@mantine/core";
+import { listarUsuarios } from "../../services/Api";
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 interface UsuarioModel {
-  id: number;
+  id: string;
   nome: string;
-  cpf: string;
+  CPF: string;
   email: string;
+  confirmaEmail: string;
   receberEmail: boolean;
+  role: string;
 }
 export default function ListarUsuarios() {
   const [usuarios, setUsuarios] = useState<UsuarioModel[]>([]);
@@ -18,47 +20,27 @@ export default function ListarUsuarios() {
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
-        const response = await axios.get("http://localhost:5287/api/Usuario"); // Corrigido o prefixo do URL
-        setUsuarios(response.data); // Atualiza o estado com os dados recebidos
+        // Chamando a função listarUsuarios
+        const usuarios = await listarUsuarios();
+        setUsuarios(usuarios); // Atualiza o estado com os dados recebidos
         setLoading(false); // Para o carregamento
       } catch (error) {
         setLoading(false);
 
-        // Verifica se o erro é um erro de resposta do servidor (HTTP status code)
-        if (axios.isAxiosError(error)) {
-          if (error.response) {
-            // Erros com resposta do servidor (status code 4xx ou 5xx)
-            setError(
-              `Erro ${error.response.status}: ${
-                error.response.data?.message || "Falha ao carregar os usuários"
-              }`
-            );
-          } else if (error.request) {
-            // Erros onde a requisição foi feita mas não houve resposta (ex: erro de rede)
-            setError(
-              "Nenhuma resposta do servidor. Verifique sua conexão ou o status do servidor."
-            );
-          } else {
-            // Qualquer outro erro que possa ter ocorrido
-            setError(`Erro inesperado: ${error.message}`);
-          }
-        } else {
-          // Caso o erro não seja relacionado ao Axios
-          setError(`Erro: ${error}`);
-        }
-
-        console.error("Detalhes do erro:", error); // Log para ajudar no debug
+        // Se ocorrer erro, setar mensagem de erro
+        setError("Erro ao carregar os usuários");
+        console.error("Detalhes do erro:", error);
       }
     };
 
     fetchUsuarios();
-  }, []);
+  }, []); // Dependência vazia, executa uma vez na montagem do componente
 
   // Renderiza as linhas da tabela
   const rows = usuarios.map((usuario) => (
     <Table.Tr key={usuario.nome}>
       <Table.Td>{usuario.nome}</Table.Td>
-      <Table.Td>{usuario.cpf}</Table.Td>
+      <Table.Td>{usuario.CPF || "CPF não disponivel"}</Table.Td>
       <Table.Td>{usuario.email}</Table.Td>
       <Table.Td>
         <Checkbox checked={usuario.receberEmail} readOnly />

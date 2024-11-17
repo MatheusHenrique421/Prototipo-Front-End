@@ -1,78 +1,41 @@
-import { createBrowserRouter } from "react-router-dom";
-import { Home } from "./views/home/Home";
-import Artesanatos from "./views/artesanatos/Artesanatos";
-import CadastroUsuario from "./views/usuarios/CadastroUsuario";
-import RootLayout from "./views/root/RootLayout";
+import CadastrarArtesanato from "./views/artesanatos/CadastrarArtesanato";
+import CadastrarUsuario from "./views/usuarios/CadastrarUsuario";
+import CadastrarArtesao from "./views/artesaos/CadastrarArtesao";
 import ListarUsuarios from "./views/usuarios/ListarUsuarios";
-import Login from "./views/login/Login";
-import EditarUsuario from "./views/usuarios/EditarUsuario";
 import ListarArtesaos from "./views/artesaos/ListarArtesaos";
-import CadastroArtesao from "./views/artesaos/CadastroArtesao";
+import EditarUsuario from "./views/usuarios/EditarUsuario";
 import ExibirArtesao from "./views/artesaos/ExibirArtesao";
+import Artesanatos from "./views/artesanatos/Artesanatos";
+import { createBrowserRouter } from "react-router-dom";
+import RootLayout from "./views/root/RootLayout";
+import Teste from "./views/usuarios/Teste";
+import { Home } from "./views/home/Home";
+import Login from "./views/login/Login";
 
 const router = createBrowserRouter([
   {
-    index: true,
-    path: "/CadastroUsuario",
-    element: <CadastroUsuario />,
-  },
+    //path: "/",
+    element: <RootLayout />, 
+    children: [
+      { index: true, path: "Home", element: <Home /> }, 
+      
+      { path: "CadastrarUsuario", element: <CadastrarUsuario /> },
+      { path: "ListarUsuarios", element: <ListarUsuarios /> },
+      { path: "EditarUsuario", element: <EditarUsuario /> },
+
+      { path: "CadastrarArtesao", element: <CadastrarArtesao /> },
+      { path: "ListarArtesaos", element: <ListarArtesaos /> },
+      { path: "ExibirArtesao/:artesaoId", element: <ExibirArtesao /> },
+
+      { path: "CadastrarArtesanato", element: <CadastrarArtesanato /> },
+      { path: "Artesanatos", element: <Artesanatos /> },
+      { path: "Teste", element: <Teste /> },
+    ],
+  },  
   {
-    path: "/",
+    path: "/login",
     element: <Login />,
   },
-
-  {
-    path: "/Index",
-    element: <RootLayout />,
-  },
-  {
-    index: true,
-    path: "/Home",
-    element: <Home />,
-  },
-  {
-    index: true,
-    path: "/Artesanatos",
-    element: <Artesanatos />,
-  },
-  {
-    index: true,
-    path: "/ListarArtesaos",
-    element: <ListarArtesaos />,
-  },
-
-  {
-    index: true,
-    path: "/CadastroArtesao",
-    element: <CadastroArtesao />,
-  },
-  {
-    index: true,
-    path: "/ExibirArtesao",
-    element: <ExibirArtesao />,
-  },
-  {
-    index: true,
-    path: "/ListarUsuarios",
-    element: <ListarUsuarios />,
-  },
-  {
-    index: true,
-    path: "/EditarUsuario",
-    element: <EditarUsuario />,
-  },
-
-  // {
-  //   path: "/",
-  //   element: (
-  //     <AuthContext.Provider value={{ ... }}>
-  //       <RootLayout />
-  //     </AuthContext.Provider>
-  //   ),
-  //   children: [
-  //     // ... outras rotas
-  //   ],
-  // },
 ]);
 
 export default router;

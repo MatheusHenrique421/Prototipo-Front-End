@@ -1,13 +1,12 @@
 export interface ArtesaoModel {
-    id: number;
-    usuarioId: number;
+    id: string;
+    usuarioId: string;
     imagemPerfil: string;
-    // fotoUrl: string;
+    fotoUrl: string;
     nomeArtesao: string;
     descricaoPerfil: string;
     telefone: string;
-    whatsApp: string;
-    categoriaArtesanato: string;
+    whatsApp: string;    
     receberEncomendas: boolean;
     enviaEncomendas: boolean;
     CEP: string;

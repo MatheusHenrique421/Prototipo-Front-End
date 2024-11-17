@@ -1,6 +1,6 @@
 import UsuarioForm from "../../components/UsuarioForm";
 
-export default function CadastroUsuario() {
+export default function CadastrarUsuario() {
   return (
     // <section>
     //   <Container>

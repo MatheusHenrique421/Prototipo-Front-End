@@ -1,6 +1,8 @@
+import { UsuarioModel } from "../models/UsuarioModel";
 import React, { useState, FormEvent } from "react";
 import { cadastrarUsuario } from "../services/Api";
 import { IMaskInput } from "react-imask";
+import { Link } from "react-router-dom";
 import {
   Container,
   Center,
@@ -11,61 +13,50 @@ import {
   Radio,
   Button,
   InputBase,
+  Title,
 } from "@mantine/core";
-import { Link } from "react-router-dom";
 
 const UsuarioForm: React.FC = () => {
-  const [id] = useState<number>(Math.floor(Math.random() * 1000000));
-  const [nome, setNome] = useState<string>("");
-  const [CPF, setCPF] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [confirmaEmail, setConfirmaEmail] = useState<string>("");
-  const [senha, setSenha] = useState<string>("");
-  const [receberEmail, setReceberEmail] = useState(false);
   const [, setErrorMessage] = useState<string | null>(null);
+  const [usuario, setUsuario] = useState<UsuarioModel>({
+    id: "",
+    nome: "",
+    CPF: "",
+    email: "",
+    confirmaEmail: "",
+    senha: "",
+    receberEmail: false,
+    role: "usuario",
+    artesaoId: "",
+  });
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-
-    const usuario = {
-      id: id,
-      nome: nome,
-      CPF: CPF,
-      email: email,
-      confirmaEmail: confirmaEmail,
-      senha: senha,
-      receberEmail: receberEmail,
-    };
-
-    try {
+  
+    console.log("Tentando cadastrar usuário:", JSON.stringify(usuario, null, 2));
+  
+    try {      
       const data = await cadastrarUsuario(usuario);
-      console.log(data);
+  
+      // Logs de sucesso
+      console.log("Usuário cadastrado com sucesso. Dados retornados da API:", JSON.stringify(data, null, 2));
+  
+      // Feedback ao usuário
       alert("Usuário cadastrado com sucesso!");
-      console.log(usuario);
     } catch (error: any) {
-      console.error("Erro ao enviar os dados:", error);
-      console.log(usuario);
-      if (error.code === "ERR_NETWORK") {
-        setErrorMessage(
-          "Erro de rede: Não foi possível conectar à API. Verifique sua conexão ou se o servidor está rodando."
-        );
-        console.log(usuario);
-      } else if (error.response) {
-        setErrorMessage(
-          `Erro: ${error.response.status} - ${error.response.data}`
-        );
-        console.log(usuario);
-      } else {
-        setErrorMessage("Ocorreu um erro inesperado ao cadastrar o usuário.");
-        console.log(usuario);
-      }
+      // Captura e exibe mensagens de erro detalhadas
+      setErrorMessage(error.message);
+      console.error("Erro ao cadastrar usuário:", error.message || error);
     }
   };
-
+  
+  
   return (
     <section>
       <Container>
-        <h1>Criar uma nova conta</h1>
+        <Center>
+          <Title>Cadastre seu usuário</Title>
+        </Center>
         <Center>
           <form
             onSubmit={handleSubmit}
@@ -84,8 +75,10 @@ const UsuarioForm: React.FC = () => {
                 placeholder="Nome"
                 type="text"
                 id="nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
+                value={usuario.nome}
+                onChange={(e) =>
+                  setUsuario({ ...usuario, nome: e.target.value })
+                }
                 required
               />
               <InputBase
@@ -95,10 +88,12 @@ const UsuarioForm: React.FC = () => {
                 placeholder="CPF"
                 id="CPF"
                 typeof="number"
-                value={CPF}
+                value={usuario.CPF}
                 component={IMaskInput}
                 mask="000.000.000-00"
-                onChange={(e) => setCPF((e.target as HTMLInputElement).value)}
+                onChange={(e) =>
+                  setUsuario({ ...usuario, CPF: e.currentTarget.value })
+                }
                 required
               />
               <TextInput
@@ -107,8 +102,10 @@ const UsuarioForm: React.FC = () => {
                 label="E-mail:"
                 placeholder="seuEmail@email.com"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={usuario.email}
+                onChange={(e) =>
+                  setUsuario({ ...usuario, email: e.target.value })
+                }
                 required
               />
               <TextInput
@@ -117,8 +114,10 @@ const UsuarioForm: React.FC = () => {
                 label="Confirmar e-mail:"
                 placeholder="seuEmail@email.com"
                 id="confirmaEmail"
-                value={confirmaEmail}
-                onChange={(e) => setConfirmaEmail(e.target.value)}
+                value={usuario.confirmaEmail}
+                onChange={(e) =>
+                  setUsuario({ ...usuario, confirmaEmail: e.target.value })
+                }
                 required
               />
               <PasswordInput
@@ -127,16 +126,23 @@ const UsuarioForm: React.FC = () => {
                 label="Senha:"
                 placeholder="Senha"
                 id="senha"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
+                value={usuario.senha}
+                onChange={(e) =>
+                  setUsuario({ ...usuario, senha: e.target.value })
+                }
                 required
               />
               <Radio
                 id="receberEmail"
                 label="Quero receber novidades no e-mail."
-                value={String(receberEmail)}
-                checked={receberEmail}
-                onChange={(e) => setReceberEmail(e.currentTarget.checked)}
+                value={String(usuario.receberEmail)}
+                checked={usuario.receberEmail}
+                onChange={(e) =>
+                  setUsuario({
+                    ...usuario,
+                    receberEmail: e.currentTarget.checked,
+                  })
+                }
               />
               <Button type="submit" radius="md">
                 Cadastrar

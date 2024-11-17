@@ -1,3 +1,6 @@
+import { listarUsuarios } from "../../services/Api";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Container,
   Table,
@@ -9,15 +12,17 @@ import {
   TextInput,
   Group,
   InputBase,
+  PasswordInput,
+  Radio,
 } from "@mantine/core";
-import { useEffect, useState } from "react";
-import axios from "axios";
 
 interface UsuarioModel {
-  id: number;
+  id: string;
   nome: string;
-  cpf: string;
+  CPF: string;
   email: string;
+  senha: string;
+  confirmaEmail: string;
   receberEmail: boolean;
 }
 export default function EditarUsuario() {
@@ -31,29 +36,15 @@ export default function EditarUsuario() {
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
-        const response = await axios.get("http://localhost:5287/api/Usuario");
-        setUsuarios(response.data);
-        setLoading(false);
+        const data = await listarUsuarios(); // Use a função de API
+        setUsuarios(data);
       } catch (error) {
+        setError(
+          "Erro ao carregar usuários. Verifique sua conexão ou tente novamente."
+        );
+        console.error("Erro ao buscar usuários:", error);
+      } finally {
         setLoading(false);
-        if (axios.isAxiosError(error)) {
-          if (error.response) {
-            setError(
-              `Erro ${error.response.status}: ${
-                error.response.data?.message || "Falha ao carregar os usuários"
-              }`
-            );
-          } else if (error.request) {
-            setError(
-              "Nenhuma resposta do servidor. Verifique sua conexão ou o status do servidor."
-            );
-          } else {
-            setError(`Erro inesperado: ${error.message}`);
-          }
-        } else {
-          setError(`Erro: ${error}`);
-        }
-        console.error("Detalhes do erro:", error);
       }
     };
 
@@ -87,7 +78,23 @@ export default function EditarUsuario() {
   };
 
   // Função para deletar usuário
-  const deletarUsuario = async (usuarioId: number) => {
+  const deletarUsuario = async (usuarioId: string) => {
+    // Encontra o nome do usuário pelo ID
+    const usuario = usuarios.find((u) => u.id === usuarioId);
+
+    // Se não encontrar o usuário, avisa e retorna
+    if (!usuario) {
+      alert("Usuário não encontrado.");
+      return;
+    }
+
+    // Exibe o nome no alerta
+    const confirmacao = window.confirm(
+      `Deseja excluir o usuário: ${usuario.nome}?`
+    );
+
+    if (!confirmacao) return; // Interrompe se o usuário cancelar
+
     try {
       await axios.delete(`http://localhost:5287/api/Usuario/${usuarioId}`);
       setUsuarios((prevUsuarios) =>
@@ -102,7 +109,7 @@ export default function EditarUsuario() {
   const rows = usuarios.map((usuario) => (
     <Table.Tr key={usuario.id}>
       <Table.Td>{usuario.nome}</Table.Td>
-      <Table.Td>{usuario.cpf}</Table.Td>
+      <Table.Td>{usuario.CPF}</Table.Td>
       <Table.Td>{usuario.email}</Table.Td>
       <Table.Td>
         <Checkbox checked={usuario.receberEmail} readOnly />
@@ -170,13 +177,11 @@ export default function EditarUsuario() {
             radius="md"
             label="CPF:"
             placeholder="CPF"
-            id="CPF"            
-            value={editingUsuario?.cpf || ""}
-            //component={IMaskInput}
-            //mask="000.000.000-00"
+            id="CPF"
+            value={editingUsuario?.CPF || ""}
             onChange={(e) =>
               setEditingUsuario((prev) =>
-                prev ? { ...prev, cpf: e.target.value } : null
+                prev ? { ...prev, CPF: e.target.value } : null
               )
             }
             readOnly
@@ -187,6 +192,36 @@ export default function EditarUsuario() {
             onChange={(e) =>
               setEditingUsuario((prev) =>
                 prev ? { ...prev, email: e.target.value } : null
+              )
+            }
+          />
+          <TextInput
+            label="Confirmar E-mail"
+            value={editingUsuario?.confirmaEmail || ""}
+            onChange={(e) =>
+              setEditingUsuario((prev) =>
+                prev ? { ...prev, confirmaEmail: e.target.value } : null
+              )
+            }
+          />
+          <PasswordInput
+            label="Confirmar E-mail"
+            value={editingUsuario?.senha || ""}
+            onChange={(e) =>
+              setEditingUsuario((prev) =>
+                prev ? { ...prev, senha: e.target.value } : null
+              )
+            }
+          />
+          <Radio
+          p="sm"
+            id="receberEmail"
+            label="Quero receber novidades no e-mail."
+            value={String(editingUsuario?.receberEmail || false)}
+            checked={!!editingUsuario?.receberEmail}
+            onChange={(e) =>
+              setEditingUsuario((prev) =>
+                prev ? { ...prev, receberEmail: e.currentTarget.checked } : null
               )
             }
           />

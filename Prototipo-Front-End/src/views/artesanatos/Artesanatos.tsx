@@ -53,7 +53,7 @@ export default function Artesanatos() {
           processo e muito mais.
         </Text>
 
-        <Link to="/CadastroUsuario">
+        <Link to="/CadastrarUsuario">
         <Button color="blue" fullWidth mt="md" radius="md">
           Cadastrar Usuário
         </Button>

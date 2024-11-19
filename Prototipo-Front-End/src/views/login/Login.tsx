@@ -15,8 +15,10 @@ import { loginUsuario } from "../../services/Api";
 import { LoginModel } from "../../models/LoginModel";
 
 const initialLoginState: LoginModel = {
+  usuarioId:"",
   email: "",
   senha: "",
+  token:""
 };
 
 export default function Login() {
@@ -37,10 +39,16 @@ export default function Login() {
     
     try {
       const data = await loginUsuario(login);
-      navigate("/CadastrarArtesao");
-      alert("Login realizado com sucesso!");
+
+      // Salve o ID ou token no localStorage ou estado global
+      localStorage.setItem("usuarioId", data.usuarioId); // Assumindo que o backend retorna o ID
+      
+      alert("Login realizado com sucesso!");      
       console.log("Login bem sucedido!", data);
+      console.log("usuarioId:", data.usuarioId);
+      
       // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
+      navigate("/CadastrarArtesao");
     } catch (error) {
       console.error("Erro durante o login:", error);
       // Exibir uma mensagem de erro mais amigável para o usuário

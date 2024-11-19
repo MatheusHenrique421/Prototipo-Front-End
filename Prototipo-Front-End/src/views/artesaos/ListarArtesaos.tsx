@@ -2,48 +2,33 @@ import { Container, Group, Loader, Text } from "@mantine/core";
 import { ArtesaoModel } from "./../../models/ArtesaoModel";
 import { useEffect, useState } from "react";
 import CardArtesao from "./CardArtesao";
-import axios from "axios";
+import { listarArtesaos } from "../../services/Api";
+
 
 export default function ListarArtesaos() {
   const [artesaos, setArtesaos] = useState<ArtesaoModel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Faz a requisição para buscar os artesãos da API
-  useEffect(() => {
+   // Faz a requisição para buscar os artesãos da API
+   useEffect(() => {
     const fetchArtesaos = async () => {
+      setLoading(true); // Inicia o estado de carregamento
       try {
-        const response = await axios.get("http://localhost:5287/api/Artesao");
-        setArtesaos(response.data); // Atualiza o estado com os dados recebidos
-        setLoading(false); // Para o carregamento
-      } catch (error) {
-        setLoading(false);
-
-        if (axios.isAxiosError(error)) {
-          if (error.response) {
-            setError(
-              `Erro ${error.response.status}: ${
-                error.response.data?.message || "Falha ao carregar os artesãos"
-              }`
-            );
-          } else if (error.request) {
-            setError(
-              "Nenhuma resposta do servidor. Verifique sua conexão ou o status do servidor."
-            );
-          } else {
-            setError(`Erro inesperado: ${error.message}`);
-          }
-        } else {
-          setError(`Erro: ${error}`);
-        }
-
-        console.error("Detalhes do erro:", error);
+        const resposta = await listarArtesaos();
+        setArtesaos(resposta); // Atualiza o estado com os dados recebidos
+        setError(null); // Limpa erros, caso existam
+      } catch (erro: any) {
+        console.error("Erro ao buscar os artesãos:", erro);
+        setError("Não foi possível carregar a lista de artesãos."); // Define a mensagem de erro
+      } finally {
+        setLoading(false); // Finaliza o carregamento
       }
     };
 
     fetchArtesaos();
-  }, []);
-
+  }, []); // Executa apenas na montagem do componente
+  
   return (
     <section>
       <Container>

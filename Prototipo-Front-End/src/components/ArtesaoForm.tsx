@@ -16,16 +16,22 @@ import {
   Button,
   Text,
 } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+
 
 const ArtesaoForm: React.FC = () => {
   const [, setErrorMessage] = useState<string>("");
+  const usuarioId = localStorage.getItem("usuarioId"); // Recupere o ID do usuário
+  const [imagemRedimensionada, setImagemRedimensionada] = useState<string | null>(null);
+  // Gerando um GUID para o id do artesão
+  const artesaoId = crypto.randomUUID();
   const [artesao, setArtesao] = useState<ArtesaoModel>({
-    id: "",
+    id: artesaoId,
     nomeArtesao: "",
     telefone: "",
     whatsApp: "",
     descricaoPerfil: "",
-    usuarioId: "",    
+    usuarioId: usuarioId || "",    
     receberEncomendas: false,
     enviaEncomendas: false,
     imagemPerfil: "",
@@ -39,6 +45,7 @@ const ArtesaoForm: React.FC = () => {
     numero: "",
     semNumero: false,
   });
+  const navigate = useNavigate();
 
   // Função que busca as informações do CEP
   const buscarCep = async () => {
@@ -74,30 +81,83 @@ const ArtesaoForm: React.FC = () => {
       setErrorMessage(String(error));
       alert("Erro ao buscar o CEP. Tente novamente mais tarde.");
     }
+  };  
+
+  const redimensionarImagem = (file: File) => {
+    const reader = new FileReader();
+
+    reader.onload = (e: any) => {
+      const img = new Image();
+      img.src = e.target.result;
+
+      img.onload = () => {
+        // Criando o canvas
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Defina as novas dimensões da imagem (por exemplo, 200x200px)
+        const MAX_WIDTH = 200;
+        const MAX_HEIGHT = 200;
+        let width = img.width;
+        let height = img.height;
+
+        // Calcula a nova largura e altura proporcionalmente
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = (height * MAX_WIDTH) / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = (width * MAX_HEIGHT) / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        // Definindo as dimensões no canvas
+        canvas.width = width;
+        canvas.height = height;
+
+        // Desenhando a imagem no canvas redimensionado
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Convertendo a imagem redimensionada de volta para Base64
+        const imagemBase64 = canvas.toDataURL("image/jpeg");
+        setImagemRedimensionada(imagemBase64); // Armazena a imagem redimensionada
+      };
+    };
+
+    // Lê o arquivo da imagem
+    reader.readAsDataURL(file);
   };
 
   const handleFileChange = (file: File | null) => {
     if (file) {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
-
+  
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
-          // Atualiza o estado com a string base64 da imagem
+          const base64String = reader.result.split(',')[1]; // Obtém a string base64 sem o prefixo
           setArtesao({
             ...artesao,
-            imagemPerfil: reader.result,
+            imagemPerfil: base64String, // Atualiza o estado com a imagem em base64
           });
-          console.log(file);
+          console.log(base64String); // Exibe a base64 no console
         }
       };
+      console.log(file);
+      redimensionarImagem(file);
+      // Lê a imagem como uma URL de dados (Base64)
+      reader.readAsDataURL(file);
+
     } else {
       setArtesao({
         ...artesao,
-        imagemPerfil: "",
+        imagemPerfil: "", // Limpa o estado se nenhum arquivo for selecionado
       });
     }
   };
+  
 
   // Função para atualizar o estado de artesão ao alterar qualquer campo
   const handleChange = (
@@ -158,6 +218,8 @@ const ArtesaoForm: React.FC = () => {
       console.log("Usuário cadastrado com sucesso. Dados retornados da API:", JSON.stringify(data, null, 2));
       
       alert("Artesão cadastrado com sucesso!");
+      // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)      
+      navigate(`/ExibirArtesao/${artesao.id}`);      
     } catch (error: any) {
         setErrorMessage(error.message);
         
@@ -180,7 +242,7 @@ const ArtesaoForm: React.FC = () => {
                     variant="default"
                     radius="xl"
                     size="xl"
-                    src={artesao.imagemPerfil}
+                    src={imagemRedimensionada}
                   />
                   <FileInput
                     label="Foto de perfil"

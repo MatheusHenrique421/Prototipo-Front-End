@@ -1,3 +1,8 @@
+import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { ArtesaoModel } from "../../models/ArtesaoModel";
+import { BuscarArtesaoPorId, buscarUrlDaImagem } from "../../services/Api";
+import { HiOutlineMail } from "react-icons/hi";
+import { useState, useEffect } from "react";
 import {
   Container,
   Text,
@@ -10,52 +15,47 @@ import {
   Alert,
   Checkbox,
 } from "@mantine/core";
-import { ArtesaoModel } from "../../models/ArtesaoModel";
-import {  buscarUrlDaImagem } from "../../services/Api";
-import { useState, useEffect } from "react";
-import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
-import { HiOutlineMail } from "react-icons/hi";
-import { HiGift } from "react-icons/hi";
 import { Link, useParams } from "react-router-dom";
-
-
+import { HiGift } from "react-icons/hi";
 
 export default function ExibirArtesao() {
-  const { artesaoId } = useParams<{ artesaoId: string }>();
-  const [artesao, setArtesao] = useState<ArtesaoModel | null>(null);
   const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
+  const [artesao, setArtesao] = useState<ArtesaoModel | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(true);
-
-  if (!artesaoId || isNaN(Number(artesaoId))) {
-    console.error("ID do artesão inválido ou ausente 89789789789789879");
-    return <div>Erro: ID do artesão não encontrado ou inválido.</div>;
-  }
-  
-  const artesaoIdNumber = parseInt(artesaoId, 10);
+  const { id } = useParams<{ id?: string }>();
+  // Verifica se o id é válido antes de usá-lo
+  const idCorreto = id && id.startsWith("id=") ? id.split("=")[1] : id;
+  console.log("ID recebido via URL corrigido:", idCorreto);
   const icon = <HiGift />;
 
-  if (isNaN(artesaoIdNumber)) {
-    console.warn(
-      "***ID do artesão não encontrado ou inválido:",
-      artesaoIdNumber
-    );
-  }
-
   useEffect(() => {
-    if (!artesaoIdNumber || artesaoIdNumber === 0) {
-      console.log(artesaoIdNumber + " id é isso");
-      console.warn(
-        "ID do artesão não encontrado ou inválido:",
-        artesaoIdNumber.valueOf
-      );
-      return;
-    }
+    if (!idCorreto) return;
+  
+    const carregarArtesao = async () => {
+      try {
+        // Buscar artesão
+        const artesaoEncontrado = await BuscarArtesaoPorId(idCorreto);
+        setArtesao(artesaoEncontrado);
+  
+        // Verificar se a URL da imagem existe e buscar
+        const dataUri = await buscarUrlDaImagem(idCorreto); // A função que você precisa implementar
+        if (dataUri) {
+          setUrlDaImagem(dataUri);
+        }
+  
+        console.log(`Artesão Encontrado: ${JSON.stringify(artesaoEncontrado, null, 2)}`);
+      } catch (err) {
+        console.log(err);
+        setErro("Erro ao carregar dados do artesão ou sua imagem.");
+      }
+    };
+  
     const buscarImagem = async () => {
       try {
         // Buscando a URL da imagem usando o ID do artesão
-        const dataUri = await buscarUrlDaImagem(artesaoIdNumber);
-        console.log("ID do Artesão:", artesaoIdNumber);
+        const dataUri = await buscarUrlDaImagem(idCorreto);
+        console.log("ID do Artesão:", idCorreto);
         setUrlDaImagem(dataUri); // Atualiza o estado com a URL da imagem
       } catch (err) {
         setErro("Erro ao carregar a imagem. Tente novamente mais tarde.");
@@ -64,22 +64,11 @@ export default function ExibirArtesao() {
     };
 
     buscarImagem();
-  }, [artesao]); // Reexecuta a função sempre que 'artesao' mudar
+  // Reexecuta a função sempre que 'artesao' mudar
 
-  // useEffect(() => {
-  //   const fetchArtesao = async () => {
-  //     try {
-  //       const artesaodata = await BuscarArtesaoPorId(parseInt(artesaoId, 10));
-  //       console.log("Dados do artesão:", artesaodata);
-  //       console.log(artesaoIdNumber + " id é isso");
-  //       setArtesao(Array.isArray(artesaodata) ? artesaodata[0] : artesaodata); // Extrai o primeiro item se for um array
-  //     } catch (error) {
-  //       console.error("Erro ao buscar o perfil do artesão:", error);
-  //     }
-  //   };
-
-  //   fetchArtesao();
-  // }, [artesaoIdNumber]);
+    carregarArtesao();
+  }, [id]);
+  
 
   // Renderização condicional enquanto os dados são carregados
   if (!artesao) {
@@ -93,7 +82,6 @@ export default function ExibirArtesao() {
       </section>
     );
   }
-
   return (
     <section>
       <Container>
@@ -107,7 +95,9 @@ export default function ExibirArtesao() {
               size="xl"
               radius="xl"
               id="imagemPerfil"
-              src={urlDaImagem}
+              src={artesao.imagemPerfil?.startsWith('data:image') 
+                ? urlDaImagem
+                : `data:image/png;base64,${artesao.imagemPerfil}`}
               alt={`Foto de ${artesao.nomeArtesao}`}
             />
           </Group>
@@ -195,12 +185,12 @@ export default function ExibirArtesao() {
         )}
         <SimpleGrid cols={2} p="md">
           <Checkbox
-            checked={artesao.receberEncomendas}
-            label="Recebe encomendas"
+            defaultChecked={artesao.receberEncomendas}
+            label="Recebe encomendas"            
           />
 
           <Checkbox
-            checked={artesao.enviaEncomendas}
+            defaultChecked={artesao.enviaEncomendas}
             label="Envia Encomendas"
           />
         </SimpleGrid>

@@ -9,30 +9,38 @@ interface CardArtesaoProps {
 }
 
 export default function CardArtesao({ artesao }: CardArtesaoProps) {
-    const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
-    const [erro, setErro] = useState<string | null>(null);
-    
+  const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
   // Verifica se o ID do artesão é válido antes de tentar buscar a imagem
   useEffect(() => {
-    if (!artesao.id || artesao.id === null) {
-      console.warn("ID do artesão não encontrado ou inválido:", artesao.id);
-      return; // Não faz a requisição se o ID for zero ou inválido
+    if (!artesao.id || !artesao.id) {
+      console.warn("Artesão ou ID inválido:", artesao.id);
+      return;
     }
 
-    const buscarImagem = async () => {
+    const carregarImagem = async () => {
       try {
-        // Buscando a URL da imagem usando o ID do artesão
-        const dataUri = await buscarUrlDaImagem(parseInt(artesao.id));
-        console.log("ID do Artesão:", parseInt(artesao.id).toPrecision());
-        setUrlDaImagem(dataUri); // Atualiza o estado com a URL da imagem
-      } catch (err) {
-        setErro("Erro ao carregar a imagem. Tente novamente mais tarde.");
-        console.error("Erro ao buscar a imagem:", err);
+        if (artesao.imagemPerfil) {
+          // Se `imagemPerfil` já é Base64, não é necessário converter
+          const imagemBase64 = `data:image/png;base64,${artesao.imagemPerfil}`;
+          setUrlDaImagem(imagemBase64);
+        } else {
+          // Caso a imagem não esteja disponível, tenta buscar da API
+          const url = await buscarUrlDaImagem(artesao.id);
+          if (url) {
+            setUrlDaImagem(url);
+          } else {
+            throw new Error("URL da imagem é nula.");
+          }
+        }
+      } catch (error: any) {
+        setErro(error.message || "Erro ao carregar a imagem.");
       }
     };
 
-    buscarImagem();
-  }, [artesao]); // Reexecuta a função sempre que 'artesao' mudar
+    carregarImagem();
+  }, [artesao]);
 
   return (
     <Card shadow="sm" padding="md" radius="md" withBorder>
@@ -77,6 +85,6 @@ export default function CardArtesao({ artesao }: CardArtesaoProps) {
   );
 
   function acessaArtesaoComID() {
-    return `/ExibirArtesao/${artesao.id}`;
+    return `/ExibirArtesao/id=${artesao.id}`;
   }
 }

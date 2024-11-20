@@ -1,5 +1,6 @@
 import { ArtesaoModel } from "../models/ArtesaoModel";
 import { cadastrarArtesao } from "../services/Api";
+import { useNavigate } from "react-router-dom";
 import { useState, FormEvent } from "react";
 import { IMaskInput } from "react-imask";
 import {
@@ -16,8 +17,6 @@ import {
   Button,
   Text,
 } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
-
 
 const ArtesaoForm: React.FC = () => {
   const [, setErrorMessage] = useState<string>("");

@@ -1,5 +1,7 @@
 import { ArtesanatoModel } from "../models/ArtesanatoModel";
 import { useState } from "react";
+import { cadastrarArtesanato } from "../services/Api";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Avatar,
   Button,
@@ -21,10 +23,18 @@ import {
 } from "@mantine/core";
 
 const ArtesanatoForm: React.FC = () => {
+  const [, setErrorMessage] = useState<string>("");
+  const navigate = useNavigate();
+  const { id } = useParams<{ id?: string }>();
+  const idCorreto = id && id.startsWith("id=") ? id.split("=")[1] : id;
+  const artesaoIdFromParams = id?.startsWith("id=") ? id.split("=")[1] : id;
+  const artesaoId =
+    artesaoIdFromParams || localStorage.getItem("artesaoId") || "";
+  const artesanatoId = crypto.randomUUID();
   const [artesanato, setArtesao] = useState<ArtesanatoModel>({
-    id: "",
+    id: artesanatoId,
     usuarioId: "",
-    artesaoId: "",
+    artesaoId: artesaoId || "",
     imagensArtesanato: [],
     sobEncomenda: false,
     categoriaTags: [],
@@ -36,22 +46,61 @@ const ArtesanatoForm: React.FC = () => {
     alturaArtesanato: 0,
     comprimentoArtesanato: 0,
     pesoArtesanato: 0,
+    dataCriacao: new Date(), // Data atual
+    //tempoCriacaoHr: getHoraAtual(), // Hora e minutos atuais no formato HH:mm
+    tempoCriacaoHr: "00:00:00", // Exemplo de 1.5 horas formatado para "01:30:00"
   });
+
+  const compressImage = (
+    file: File,
+    maxWidth: number,
+    maxHeight: number,
+    quality: number
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        img.src = reader.result as string;
+      };
+
+      img.onload = () => {
+        // Calcula as novas dimensões mantendo a proporção
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
+        const width = img.width * ratio;
+        const height = img.height * ratio;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Desenha a imagem no canvas
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Converte a imagem para base64 com a qualidade desejada
+        const compressedDataUrl = canvas.toDataURL(file.type, quality);
+        resolve(compressedDataUrl);
+      };
+
+      img.onerror = () => {
+        reject(new Error("Erro ao carregar imagem"));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleFilesChange = (files: File[] | null) => {
     if (files && files.length > 0) {
       const fileReaders: Promise<string>[] = Array.from(files).map((file) => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === "string") {
-              resolve(reader.result); // Converte para base64
-            } else {
-              reject(new Error("Erro ao ler arquivo."));
-            }
-          };
-          reader.readAsDataURL(file);
-        });
+        return compressImage(file, 800, 800, 0.7) // Ajuste o tamanho máximo e a qualidade
+          .then((compressedImage) => compressedImage)
+          .catch((error) => {
+            console.error("Erro ao compactar a imagem:", error);
+            return ""; // Retorna uma string vazia caso haja erro na compactação
+          });
       });
 
       Promise.all(fileReaders)
@@ -92,16 +141,35 @@ const ArtesanatoForm: React.FC = () => {
     return <Pill>{value.name}</Pill>;
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     // Exemplo de envio para a API
     console.log(
-      "Dados do artesão enviados:",
+      "Dados do artesanato enviados:",
       JSON.stringify(artesanato, null, 2)
     );
+    try {
+      const data = await cadastrarArtesanato(artesanato);
 
-    // Adicione aqui a lógica de envio para a API, como usando Axios.
+      console.log(
+        "Usuário cadastrado com sucesso. Dados retornados da API:",
+        JSON.stringify(data, null, 2)
+      );
+
+      alert("Artesão cadastrado com sucesso!");
+      // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
+      navigate(`/ExibirArtesanato/${artesanato.id}`);
+    } catch (error: any) {
+      setErrorMessage(error.message);
+
+      console.log(
+        "Tamanho da string base64:",
+        artesanato.imagensArtesanato.length
+      );
+      console.error("Erro ao cadastrar Artesão:", error.message || error);
+      console.log(artesanato);
+    }
   };
 
   return (
@@ -131,7 +199,7 @@ const ArtesanatoForm: React.FC = () => {
                   multiple={true}
                   accept="image/png,image/jpeg"
                 />
-              </SimpleGrid> 
+              </SimpleGrid>
               <Center>
                 <Group mt="md">
                   <SimpleGrid cols={4} spacing="sm">
@@ -172,16 +240,17 @@ const ArtesanatoForm: React.FC = () => {
                   label="Título do artesanato:"
                   placeholder="Título do artesanato"
                   type="text"
-                  id="tituloArtesanato"                  
-                  onChange={(e) => handleChange(e.target.value, "tituloArtesanato")}
+                  id="tituloArtesanato"
+                  onChange={(e) =>
+                    handleChange(e.target.value, "tituloArtesanato")
+                  }
                 />
                 <NumberInput
                   radius="md"
                   label="Preço:"
-                  placeholder="R$:"
-                  type="text"
+                  placeholder="R$:"                  
                   id="precoArtesanato"
-                  onChange={(value) => handleChange(value, "precoArtesanato")}                  
+                  onChange={(value) => handleChange(value, "precoArtesanato")}
                   decimalScale={2}
                   fixedDecimalScale
                   decimalSeparator=","
@@ -189,9 +258,17 @@ const ArtesanatoForm: React.FC = () => {
                 <NumberInput
                   radius="md"
                   label="Quantidade:"
-                  placeholder="Quantidade posui em estoque"
+                  placeholder={
+                    artesanato.sobEncomenda
+                      ? "Trabalho sob encomenda"
+                      : "Quantidade possui em estoque"
+                  }
                   id="quantidadeArtesanato"
-                  onChange={(value) => handleChange(value, "quantidadeArtesanato")}   
+                  onChange={(value) =>
+                    handleChange(value, "quantidadeArtesanato")
+                  }
+                  value={artesanato.quantidadeArtesanato || undefined}
+                  disabled={artesanato.sobEncomenda}
                 />
               </SimpleGrid>
               <SimpleGrid cols={2}>
@@ -201,8 +278,21 @@ const ArtesanatoForm: React.FC = () => {
                   placeholder="Detalhes sobre o produto, processo criativo..."
                   type="text"
                   id="descricaoArtesanato"
-                  onChange={(e) => handleChange(e.target.value, "descricaoArtesanato")}
+                  onChange={(e) =>
+                    handleChange(e.target.value, "descricaoArtesanato")
+                  }
                 />
+                {/* <NumberInput
+                  radius="md"
+                  label="Tempo de produção:"
+                  placeholder="Em horas"
+                  type="text"
+                  id="tempoCriacaoHr"
+                  onChange={(value) => handleChange(value, "tempoCriacaoHr")}
+                  decimalScale={2}
+                  fixedDecimalScale
+                  decimalSeparator=":"
+                /> */}
               </SimpleGrid>
               <Divider label="Caracteristicas do artesanato" mt="sm" />
               <SimpleGrid cols={4}>
@@ -212,7 +302,7 @@ const ArtesanatoForm: React.FC = () => {
                   placeholder="Largura em cm"
                   type="text"
                   id="larguraArtesanato"
-                  onChange={(value) => handleChange(value, "larguraArtesanato")}                  
+                  onChange={(value) => handleChange(value, "larguraArtesanato")}
                   decimalScale={2}
                   fixedDecimalScale
                   decimalSeparator=","
@@ -222,7 +312,7 @@ const ArtesanatoForm: React.FC = () => {
                   label="Altura:"
                   placeholder="Altura em cm"
                   id="alturaArtesanato"
-                  onChange={(value) => handleChange(value, "alturaArtesanato")}                  
+                  onChange={(value) => handleChange(value, "alturaArtesanato")}
                   decimalScale={2}
                   fixedDecimalScale
                   decimalSeparator=","
@@ -232,7 +322,9 @@ const ArtesanatoForm: React.FC = () => {
                   label="Comprimento:"
                   placeholder="Comprimento em cm"
                   id="comprimentoArtesanato"
-                  onChange={(value) => handleChange(value, "comprimentoArtesanato")}                  
+                  onChange={(value) =>
+                    handleChange(value, "comprimentoArtesanato")
+                  }
                   decimalScale={2}
                   fixedDecimalScale
                   decimalSeparator=","
@@ -242,20 +334,19 @@ const ArtesanatoForm: React.FC = () => {
                   label="Peso:"
                   placeholder="Peso em gramas"
                   id="pesoArtesanato"
-                  onChange={(value) => handleChange(value, "pesoArtesanato")}                  
+                  onChange={(value) => handleChange(value, "pesoArtesanato")}
                   decimalScale={2}
                   fixedDecimalScale
                   decimalSeparator=","
                 />
               </SimpleGrid>
-              
+
               <Button m="sm" type="submit" radius="md" color="orange">
                 Voltar
               </Button>
               <Button type="submit" radius="md" color="green">
                 Salvar
               </Button>
-              
             </Fieldset>
           </form>
         </Center>

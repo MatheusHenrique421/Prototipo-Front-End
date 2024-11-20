@@ -11,6 +11,8 @@ import RootLayout from "./views/root/RootLayout";
 import Teste from "./views/usuarios/Teste";
 import { Home } from "./views/home/Home";
 import Login from "./views/login/Login";
+import ExibirArtesanato from "./views/artesanatos/ExibirArtesanato";
+import ListarArtesanatos from "./views/artesanatos/ListarArtesanatos";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +30,8 @@ const router = createBrowserRouter([
       { path: "ExibirArtesao/:id", element: <ExibirArtesao /> },
 
       { path: "CadastrarArtesanato", element: <CadastrarArtesanato /> },
+      { path: "ListarArtesanatos", element: <ListarArtesanatos /> },
+      { path: "ExibirArtesanato/:id", element: <ExibirArtesanato /> },
       { path: "Artesanatos", element: <Artesanatos /> },
       { path: "Teste", element: <Teste /> },
     ],

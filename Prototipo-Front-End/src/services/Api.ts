@@ -1,3 +1,4 @@
+import { ArtesanatoModel } from "../models/ArtesanatoModel";
 import { ArtesaoModel } from "../models/ArtesaoModel";
 import { UsuarioModel } from "../models/UsuarioModel";
 import { LoginModel } from './../models/LoginModel';
@@ -55,7 +56,6 @@ export const listarUsuarios = async (): Promise<UsuarioModel[]> => {
 //#endregion "My Region"
 
 //#region ----------------------------------------------- ARTESÃOS  -------------------------------------------------// 
-
 // Função de cadastro do artesão
 export const cadastrarArtesao = async (artesao: ArtesaoModel) => {
   return apiRequest("artesao", artesao);
@@ -91,7 +91,36 @@ export const listarArtesaos = async (): Promise<ArtesaoModel[]> => {
   console.log("Usuários retornados da API:", JSON.stringify(artesaos, null, 2));
   return artesaos
 };
-//#endregion "My Region"
+//#endregion
+
+//#region ----------------------------------------------- ARTESANATOS  -------------------------------------------------// 
+export const listarArtesanatos = async (): Promise<ArtesanatoModel[]> => {
+  // Passa o tipo de resposta como um array de ArtesanatoModel
+  const artesanatos = await apiRequest<ArtesanatoModel[]>("artesanato", null, "GET");
+  console.log("Artesanatos retornados da API:", JSON.stringify(artesanatos, null, 2));
+  return artesanatos
+};
+export const cadastrarArtesanato = async (artesanato: ArtesanatoModel) => {
+  console.log("Usuário enviado para a API:", JSON.stringify(artesanato, null, 2));
+  return apiRequest("artesanato", artesanato);
+};
+// Função para obter Artesanato por ID
+export const BuscarArtesanatoPorId = async (id: string): Promise<ArtesanatoModel> => {
+  if (!id) {
+    throw new Error("O ID do artesanato é inválido.");
+  }
+
+  try {
+    const artesanato = await apiRequest<ArtesanatoModel>(`artesanato/${id}`, null, "GET");
+    console.log("Artesanato retornado da API:", JSON.stringify(artesanato, null, 2));
+    return artesanato;
+  } catch (error) {
+    console.error("Erro ao buscar artesanato por ID:", error);
+    throw new Error("Erro ao buscar artesanato. Tente novamente mais tarde.");
+  }
+};
+//#endregion
+
 
 // Função assíncrona para buscar a URL da imagem
 export const buscarUrlDaImagem = async (id: string): Promise<string | null> => {

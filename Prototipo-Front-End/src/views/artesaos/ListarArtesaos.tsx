@@ -1,17 +1,16 @@
-import { Container, Group, Loader, Text } from "@mantine/core";
+import { Container, Group, Loader, SimpleGrid, Text } from "@mantine/core";
 import { ArtesaoModel } from "./../../models/ArtesaoModel";
 import { useEffect, useState } from "react";
 import CardArtesao from "./CardArtesao";
 import { listarArtesaos } from "../../services/Api";
-
 
 export default function ListarArtesaos() {
   const [artesaos, setArtesaos] = useState<ArtesaoModel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-   // Faz a requisição para buscar os artesãos da API
-   useEffect(() => {
+  // Faz a requisição para buscar os artesãos da API
+  useEffect(() => {
     const fetchArtesaos = async () => {
       setLoading(true); // Inicia o estado de carregamento
       try {
@@ -28,7 +27,7 @@ export default function ListarArtesaos() {
 
     fetchArtesaos();
   }, []); // Executa apenas na montagem do componente
-  
+
   return (
     <section>
       <Container>
@@ -41,11 +40,11 @@ export default function ListarArtesaos() {
         ) : error ? (
           <Text c="red">{error}</Text>
         ) : (
-          <Group>
-            {artesaos.map((artesao) => (
-              <CardArtesao key={artesao.id} artesao={artesao} />
-            ))}
-          </Group>
+          <SimpleGrid cols={2}>            
+              {artesaos.map((artesao) => (
+                <CardArtesao key={artesao.id} artesao={artesao} />
+              ))}            
+          </SimpleGrid>
         )}
       </Container>
     </section>

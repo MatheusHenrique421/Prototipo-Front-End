@@ -1,8 +1,18 @@
-import { Card, Image, Text, Badge, Button } from "@mantine/core";
+import { TbHome, TbNotes, TbCubeSend  } from "react-icons/tb";
 import { ArtesaoModel } from "../../models/ArtesaoModel";
 import { buscarUrlDaImagem } from "../../services/Api";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  Card,
+  Image,
+  Text,
+  Badge,
+  Button,
+  SimpleGrid,
+  Center,
+} from "@mantine/core";
+
 
 interface CardArtesaoProps {
   artesao: ArtesaoModel;
@@ -53,26 +63,42 @@ export default function CardArtesao({ artesao }: CardArtesaoProps) {
           alt={`Foto de ${artesao.nomeArtesao}`}
         />
       </Card.Section>
-      <Text fw={500} mt="md">
-        {artesao.nomeArtesao}
-      </Text>
-      <Badge color={artesao.receberEncomendas ? "green" : "red"} mt="xs">
-        {artesao.receberEncomendas
-          ? "Aceita encomendas"
-          : "Não aceita encomendas"}
-      </Badge>
-      <Badge color={artesao.enviaEncomendas ? "green" : "red"} mt="xs">
-        {artesao.enviaEncomendas ? "Envia encomendas" : "Não envia encomendas"}
-      </Badge>
+      <Center>
+        <Text fw={500} mt="md">
+          {artesao.nomeArtesao}
+        </Text>
+      </Center>
+      <SimpleGrid cols={2}>
+        <Badge variant="light" color={artesao.receberEncomendas ? "green" : "red"} mt="xs" p="sm">
+         <TbNotes /> {artesao.receberEncomendas
+            ? "Aceita encomendas"
+            : "Não aceita encomendas"}
+        </Badge>
+        <Badge variant="light" color={artesao.enviaEncomendas ? "green" : "red"} mt="xs" p="sm">
+        <TbCubeSend/> {artesao.enviaEncomendas
+            ? "Envia encomendas"
+            : "Somente retirada"}
+        </Badge>
+      </SimpleGrid>
       <Text size="sm" c="dimmed">
         {/* CPF: {artesao.cpf} */}
       </Text>
       <Text size="sm" c="dimmed">
         {/* E-mail: {artesao.email} */}
       </Text>
-      <Text size="sm" c="dimmed" mt="xs">
+      <Text size="sm" c="dimmed" mt="xs" lineClamp={4}>
         {artesao.descricaoPerfil}
       </Text>
+      <SimpleGrid cols={2}>
+        <Badge variant="light" color="cyan" mt="xs" p="sm">
+         <TbHome/> {artesao.cidade} - {artesao.estado}
+        </Badge>
+        <Badge color={artesao.enviaEncomendas ? "green" : "red"} mt="xs" p="sm">
+          {artesao.enviaEncomendas
+            ? "Envia encomendas"
+            : "Não envia encomendas"}
+        </Badge>
+      </SimpleGrid>
       <Text size="sm" c="dimmed" mt="xs">
         {artesao.id}
       </Text>

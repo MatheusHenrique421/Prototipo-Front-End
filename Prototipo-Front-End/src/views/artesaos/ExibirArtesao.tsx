@@ -1,8 +1,10 @@
+import { BuscarArtesaoPorId, buscarUrlDaImagem } from "../../services/Api";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { ArtesaoModel } from "../../models/ArtesaoModel";
-import { BuscarArtesaoPorId, buscarUrlDaImagem } from "../../services/Api";
+import { Link, useParams } from "react-router-dom";
 import { HiOutlineMail } from "react-icons/hi";
 import { useState, useEffect } from "react";
+import { HiGift } from "react-icons/hi";
 import {
   Container,
   Text,
@@ -15,47 +17,53 @@ import {
   Alert,
   Checkbox,
 } from "@mantine/core";
-import { Link, useParams } from "react-router-dom";
-import { HiGift } from "react-icons/hi";
 
 export default function ExibirArtesao() {
   const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
-  const [artesao, setArtesao] = useState<ArtesaoModel | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(true);
+
+  const [artesao, setArtesao] = useState<ArtesaoModel | null>(null);
   const { id } = useParams<{ id?: string }>();
   // Verifica se o id é válido antes de usá-lo
-  const idCorreto = id && id.startsWith("id=") ? id.split("=")[1] : id;
-  console.log("ID recebido via URL corrigido:", idCorreto);
+  const artesaoId = id && id.startsWith("id=") ? id.split("=")[1] : id;
+  console.log("ID recebido via URL corrigido:", artesaoId);
+  
   const icon = <HiGift />;
 
+  function acessaArtesaoComID() {
+    return `/CadastrarArtesanato`;
+  }
+
   useEffect(() => {
-    if (!idCorreto) return;
-  
+    if (!artesaoId) return;
+
     const carregarArtesao = async () => {
       try {
         // Buscar artesão
-        const artesaoEncontrado = await BuscarArtesaoPorId(idCorreto);
+        const artesaoEncontrado = await BuscarArtesaoPorId(artesaoId);
         setArtesao(artesaoEncontrado);
-  
+
         // Verificar se a URL da imagem existe e buscar
-        const dataUri = await buscarUrlDaImagem(idCorreto); // A função que você precisa implementar
+        const dataUri = await buscarUrlDaImagem(artesaoId); // A função que você precisa implementar
         if (dataUri) {
           setUrlDaImagem(dataUri);
         }
-  
-        console.log(`Artesão Encontrado: ${JSON.stringify(artesaoEncontrado, null, 2)}`);
+
+        console.log(
+          `Artesão Encontrado: ${JSON.stringify(artesaoEncontrado, null, 2)}`
+        );
       } catch (err) {
         console.log(err);
         setErro("Erro ao carregar dados do artesão ou sua imagem.");
       }
     };
-  
+
     const buscarImagem = async () => {
       try {
         // Buscando a URL da imagem usando o ID do artesão
-        const dataUri = await buscarUrlDaImagem(idCorreto);
-        console.log("ID do Artesão:", idCorreto);
+        const dataUri = await buscarUrlDaImagem(artesaoId);
+        console.log("ID do Artesão:", artesaoId);
         setUrlDaImagem(dataUri); // Atualiza o estado com a URL da imagem
       } catch (err) {
         setErro("Erro ao carregar a imagem. Tente novamente mais tarde.");
@@ -64,11 +72,10 @@ export default function ExibirArtesao() {
     };
 
     buscarImagem();
-  // Reexecuta a função sempre que 'artesao' mudar
+    // Reexecuta a função sempre que 'artesao' mudar
 
     carregarArtesao();
   }, [id]);
-  
 
   // Renderização condicional enquanto os dados são carregados
   if (!artesao) {
@@ -95,9 +102,11 @@ export default function ExibirArtesao() {
               size="xl"
               radius="xl"
               id="imagemPerfil"
-              src={artesao.imagemPerfil?.startsWith('data:image') 
-                ? urlDaImagem
-                : `data:image/png;base64,${artesao.imagemPerfil}`}
+              src={
+                artesao.imagemPerfil?.startsWith("data:image")
+                  ? urlDaImagem
+                  : `data:image/png;base64,${artesao.imagemPerfil}`
+              }
               alt={`Foto de ${artesao.nomeArtesao}`}
             />
           </Group>
@@ -186,7 +195,7 @@ export default function ExibirArtesao() {
         <SimpleGrid cols={2} p="md">
           <Checkbox
             defaultChecked={artesao.receberEncomendas}
-            label="Recebe encomendas"            
+            label="Recebe encomendas"
           />
 
           <Checkbox
@@ -196,7 +205,10 @@ export default function ExibirArtesao() {
         </SimpleGrid>
         {/* Informações de endereço */}
         <Divider label="Obras do Artista" mt="md" mb="md" />
-        <Link to="/CadastrarArtesanato">
+        <Link to={acessaArtesaoComID()}
+        onClick={() => {
+          if (artesaoId) localStorage.setItem("artesaoId", artesaoId);
+        }}>
           <Button variant="filled" color="green">
             Cadastrar
           </Button>

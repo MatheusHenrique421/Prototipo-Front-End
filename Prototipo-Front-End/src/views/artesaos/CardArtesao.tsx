@@ -20,7 +20,7 @@ interface CardArtesaoProps {
 
 export default function CardArtesao({ artesao }: CardArtesaoProps) {
   const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [, setErro] = useState<string | null>(null);
 
   // Verifica se o ID do artesão é válido antes de tentar buscar a imagem
   useEffect(() => {

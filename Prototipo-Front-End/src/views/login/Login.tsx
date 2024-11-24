@@ -1,29 +1,30 @@
+import { LoginModel } from "../../models/LoginModel";
+import { useNavigate } from "react-router-dom";
+import { loginUsuario } from "../../services/Api";
+import { FormEvent, useState } from "react";
 import {
-  Button,
-  Center,
-  Container,
-  TextInput,
-  Text,
   PasswordInput,
   SimpleGrid,
+  TextInput,
+  Fieldset,
+  Button,
   Anchor,
   Group,
+  Stack,
+  Title,
+  Text,
 } from "@mantine/core";
-import { FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { loginUsuario } from "../../services/Api";
-import { LoginModel } from "../../models/LoginModel";
 
 const initialLoginState: LoginModel = {
-  usuarioId:"",
+  usuarioId: "",
   email: "",
   senha: "",
-  token:""
+  token: "",
 };
 
 export default function Login() {
   const [login, setLogin] = useState<LoginModel>(initialLoginState);
-  const [erro, setErro] = useState("");
+  const [erro] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,17 +37,17 @@ export default function Login() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    
+
     try {
       const data = await loginUsuario(login);
 
       // Salve o ID ou token no localStorage ou estado global
       localStorage.setItem("usuarioId", data.usuarioId); // Assumindo que o backend retorna o ID
-      
-      alert("Login realizado com sucesso!");      
+
+      alert("Login realizado com sucesso!");
       console.log("Login bem sucedido!", data);
       console.log("usuarioId:", data.usuarioId);
-      
+
       // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
       navigate("/CadastrarArtesao");
     } catch (error) {
@@ -60,20 +61,18 @@ export default function Login() {
 
   return (
     <section>
-      <Container>
-        <h1>Login</h1>
-        <Center>
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              borderRadius: "5px",
-              border: "solid",
-              padding: "30px",
-            }}
-          >
+      <Stack
+        h={900}
+        bg="var(--mantine-color-body)"
+        align="Center"
+        justify="center"
+        gap="xs"
+      >
+        <Title>LOGIN</Title>
+        <Fieldset w={360}>
+          <form onSubmit={handleSubmit}>
             <SimpleGrid cols={1}>
               <TextInput
-                w={300}
                 radius="md"
                 label="E-mail:"
                 placeholder="E-mail"
@@ -85,7 +84,6 @@ export default function Login() {
               <div>
                 <Group p="apart" mb="xs"></Group>
                 <PasswordInput
-                  w={300}
                   radius="md"
                   label="Senha:"
                   placeholder="Senha"
@@ -103,15 +101,14 @@ export default function Login() {
               <div>
                 <hr />
               </div>
-              <Center>
-                <Link to="/CadastrarUsuario">
-                  <Text>Criar uma nova conta</Text>
-                </Link>
-              </Center>
+              <SimpleGrid cols={2}>
+                <Text>Não possui cadastro?</Text>
+                <Anchor href="/CadastrarUsuario">Cadastre-se</Anchor>
+              </SimpleGrid>
             </SimpleGrid>
           </form>
-        </Center>
-      </Container>
+        </Fieldset>
+      </Stack>
     </section>
   );
 }

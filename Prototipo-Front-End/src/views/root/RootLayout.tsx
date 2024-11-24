@@ -1,42 +1,24 @@
+import { Link, Outlet } from "react-router-dom";
+import classes from "./style.module.css";
 import {
-  AppShell,
   AppShellFooter,
-  Burger,
-  Group,
   UnstyledButton,
-  Text,
-  Center,
-  Flex,
   TextInput,
+  AppShell,
+  Center,
   Button,
+  Group,
+  Text,
+  Flex,
   Menu,
 } from "@mantine/core";
-import { Link, Outlet } from "react-router-dom";
-import { useDisclosure } from "@mantine/hooks";
-import classes from "./style.module.css";
 export default function RootLayouyt() {
-  const [opened, { toggle }] = useDisclosure();
-
+  
   return (
     <>
-      <AppShell
-        header={{ height: 60 }}
-        navbar={{
-          width: 300,
-          breakpoint: "sm",
-          collapsed: { desktop: true, mobile: !opened },
-        }}
-        padding="md"
-        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-      >
+      <AppShell header={{ height: 60 }} padding="md">
         <AppShell.Header>
           <Group h="100%" px="md">
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              hiddenFrom="sm"
-              size="sm"
-            />
             <Group justify="space-between" align="center" style={{ flex: 1 }}>
               <Group align="center" gap={0} visibleFrom="sm">
                 <UnstyledButton
@@ -47,7 +29,8 @@ export default function RootLayouyt() {
                 >
                   Home
                 </UnstyledButton>
-                {/* Menu Dropdown Artesanatos */}
+
+                {/* Menu Dropdown Artesanatos*/}
                 <Menu>
                   <Menu.Target>
                     <UnstyledButton className={classes.control}>
@@ -63,6 +46,7 @@ export default function RootLayouyt() {
                     </Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
+
                 {/* Menu Dropdown Artesãos*/}
                 <Menu>
                   <Menu.Target>
@@ -70,7 +54,7 @@ export default function RootLayouyt() {
                       Artesão
                     </UnstyledButton>
                   </Menu.Target>
-                  <Menu.Dropdown>                   
+                  <Menu.Dropdown>
                     <Menu.Item component={Link} to="/CadastrarArtesao">
                       Cadastrar
                     </Menu.Item>
@@ -79,7 +63,8 @@ export default function RootLayouyt() {
                     </Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
-                {/* Menu Dropdown Artesãos*/}
+
+                {/* Menu Dropdown Usuários*/}
                 <Menu>
                   <Menu.Target>
                     <UnstyledButton className={classes.control}>
@@ -97,33 +82,29 @@ export default function RootLayouyt() {
                       Editar
                     </Menu.Item>
                   </Menu.Dropdown>
-                </Menu>              
-                <UnstyledButton
-                   ml="930px"
-                  component={Link}
-                  to="/Login"
-                  className={classes.control}
-                >
-                  Login
-                </UnstyledButton>
+                </Menu>
+
+                {/* Menu Dropdown Login/Logout*/}
+                <Menu>
+                  <Menu.Target>
+                    <UnstyledButton ml="930px" className={classes.control}>
+                      Usuário Nome
+                    </UnstyledButton>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item component={Link} to="/CadastrarArtesao">
+                      Login
+                    </Menu.Item>
+                    <Menu.Item component={Link} to="/ListarArtesaos">
+                      Logout
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+
               </Group>
             </Group>
           </Group>
         </AppShell.Header>
-
-        <AppShell.Navbar py="md" px={5}>
-          <UnstyledButton className={classes.control}>Home</UnstyledButton>
-          <UnstyledButton className={classes.control}>
-            Galeria de Artes
-          </UnstyledButton>
-          <UnstyledButton className={classes.control}>
-            Artesanatos
-          </UnstyledButton>
-          <UnstyledButton className={classes.control}>Artesãos</UnstyledButton>
-          <UnstyledButton className={classes.control}>
-            Comunidade
-          </UnstyledButton>
-        </AppShell.Navbar>
 
         <AppShell.Main mb="xl" style={{ flex: 1 }}>
           <Outlet />

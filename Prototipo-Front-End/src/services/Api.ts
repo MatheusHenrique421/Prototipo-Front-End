@@ -108,7 +108,7 @@ export const buscarArtesaoPorId = async (id: string): Promise<ArtesaoModel> => {
 
   try {
     const artesao = await apiRequest<ArtesaoModel>(`artesao/${id}`, null, "GET");
-    console.log("Usuário retornado da API:", JSON.stringify(artesao, null, 2));
+    console.log("método buscarArtesaoPorId retornado da API:", JSON.stringify(artesao, null, 2));
     return artesao;
   } catch (error) {
     console.error("Erro ao buscar artesão por ID:", error);

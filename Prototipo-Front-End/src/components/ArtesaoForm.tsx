@@ -1,5 +1,9 @@
 import { ArtesaoModel } from "../models/ArtesaoModel";
-import { atualizaArtesao, buscarArtesaoPorId, cadastrarArtesao } from "../services/Api";
+import {
+  atualizaArtesao,
+  buscarArtesaoPorId,
+  cadastrarArtesao,
+} from "../services/Api";
 import { useNavigate } from "react-router-dom";
 import { useState, FormEvent } from "react";
 import { IMaskInput } from "react-imask";
@@ -23,12 +27,15 @@ interface ArtesaoFormProps {
 }
 
 const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
-  const [imagemRedimensionada, setImagemRedimensionada] = useState<string|null>(null);
+  const [imagemRedimensionada, setImagemRedimensionada] = useState<
+    string | null
+  >(artesao.imagemPerfil || null);
   const usuarioId = localStorage.getItem("usuarioId"); // Recupere o ID do usuário
   const [, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();
 
   const [artesaoState, setArtesao] = useState<ArtesaoModel>({
+    ...artesao,
     id: artesao.id || crypto.randomUUID(),
     nomeArtesao: artesao.nomeArtesao || "",
     telefone: artesao.telefone || "",
@@ -93,11 +100,18 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        const MAX_WIDTH = 1000;  // Diminuir a largura para um tamanho mais razoável
+        const MAX_WIDTH = 1000; // Diminuir a largura para um tamanho mais razoável
         const MAX_HEIGHT = 1000; // Ajuste a altura de acordo
+        const MAX_SIZE = 1 * 1024 * 1024; // 1MB
         let width = img.width;
-        let height = img.height;
-  
+        let height = img.height;        
+        const fileSize = file.size;
+
+        if (fileSize > MAX_SIZE) {
+          alert("O arquivo é muito grande. Tente com uma imagem menor.");
+          return;
+        }
+        
         if (width > height) {
           if (width > MAX_WIDTH) {
             height = (height * MAX_WIDTH) / width;
@@ -109,7 +123,7 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
             height = MAX_HEIGHT;
           }
         }
-  
+
         canvas.width = width;
         canvas.height = height;
         ctx?.drawImage(img, 0, 0, width, height);
@@ -119,32 +133,47 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
     };
     reader.readAsDataURL(file);
   };
-  
 
   const handleFileChange = (file: File | null) => {
     if (file) {
-      // Verifique o tipo da imagem
+      // // Verifique o tipo da imagem
       const fileType = file.type;
-      if (fileType !== 'image/jpeg' && fileType !== 'image/png') {
-        alert('Formato de arquivo não suportado. Apenas JPEG e PNG são permitidos.');
+      if (fileType !== "image/jpeg" && fileType !== "image/png") {
+        alert(
+          "Formato de arquivo não suportado. Apenas JPEG e PNG são permitidos."
+        );
         return;
       }
-      // Processa a imagem normalmente
+
+      const formData = new FormData();
+      formData.append("imagem", file);
+
+      // Enviar a imagem via API
+      fetch("/upload", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => console.log("Imagem enviada com sucesso:", data))
+        .catch((error) => console.error("Erro ao enviar imagem:", error));
+
+      // Processa a nova imagem
       const reader = new FileReader();
+
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
-          const base64String = reader.result.split(',')[1];
-          setArtesao({
-            ...artesaoState,
-            imagemPerfil: base64String,
-          });
+          const base64String = reader.result.split(",")[1];
+          setArtesao({ ...artesaoState, imagemPerfil: base64String });
         }
       };
+
       redimensionarImagem(file);
       reader.readAsDataURL(file);
+    } else if (!imagemRedimensionada) {
+      // Caso nenhum arquivo seja selecionado, mantenha a imagem existente
+      setArtesao({ ...artesaoState, imagemPerfil: artesao.imagemPerfil });
     }
   };
-  
 
   // Função para atualizar o estado de artesão ao alterar qualquer campo
   const handleChange = (
@@ -196,8 +225,11 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
   // Função de submit para cadastrar o artesão
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-   
-    console.log("Tentando cadastrar Artesão:",JSON.stringify(artesaoState, null, 2));
+
+    console.log(
+      "Tentando cadastrar Artesão:",
+      JSON.stringify(artesaoState, null, 2)
+    );
 
     try {
       // Verificar se o artesão já existe com o ID informado
@@ -206,7 +238,10 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
 
         if (artesaoExistente) {
           // Se o ID já existe, faz a edição
-          const dadosEditados = await atualizaArtesao(artesaoState.id, artesaoState);
+          const dadosEditados = await atualizaArtesao(
+            artesaoState.id,
+            artesaoState
+          );
           console.log("Artesão editado com sucesso:", dadosEditados);
 
           alert("Artesão editado com sucesso!");
@@ -236,7 +271,7 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
       console.error("Erro ao cadastrar Artesão:", error.message || error);
       console.log(artesaoState);
     }
-};
+  };
 
   return (
     <section>
@@ -250,7 +285,11 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                     variant="default"
                     radius="xl"
                     size="xl"
-                    src={imagemRedimensionada}
+                    src={
+                      imagemRedimensionada
+                        ? imagemRedimensionada
+                        : artesaoState.imagemPerfil
+                    }
                   />
                   <FileInput
                     label="Foto de perfil"

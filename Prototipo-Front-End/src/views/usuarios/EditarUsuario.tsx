@@ -29,7 +29,9 @@ export default function EditarUsuario() {
   const [usuarios, setUsuarios] = useState<UsuarioModel[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingUsuario, setEditingUsuario] = useState<UsuarioModel | null>(null); // Usuário sendo editado
+  const [editingUsuario, setEditingUsuario] = useState<UsuarioModel | null>(
+    null
+  ); // Usuário sendo editado
   const [showModal, setShowModal] = useState<boolean>(false); // Modal para edição
 
   // Faz a requisição para buscar os usuários da API
@@ -37,7 +39,13 @@ export default function EditarUsuario() {
     const fetchUsuarios = async () => {
       try {
         const data = await listarUsuarios(); // Use a função de API
-        setUsuarios(data);
+        // Mapeie a resposta para ajustar os campos
+        const usuariosComCPF = data.map((usuario: any) => ({
+          ...usuario,
+          CPF: usuario.cpf, // Mapeia o campo 'cpf' para 'CPF'
+        }));
+
+        setUsuarios(usuariosComCPF);
       } catch (error) {
         setError(
           "Erro ao carregar usuários. Verifique sua conexão ou tente novamente."
@@ -108,8 +116,8 @@ export default function EditarUsuario() {
   // Renderiza as linhas da tabela
   const rows = usuarios.map((usuario) => (
     <Table.Tr key={usuario.id}>
-      <Table.Td>{usuario.nome}</Table.Td>
-      <Table.Td>{usuario.CPF}</Table.Td>
+      <Table.Td style={{ whiteSpace: 'nowrap', minWidth: '150px' }}>{usuario.nome}</Table.Td>
+      <Table.Td style={{ whiteSpace: 'nowrap', minWidth: '150px' }}>        {usuario.CPF}      </Table.Td>
       <Table.Td>{usuario.email}</Table.Td>
       <Table.Td>
         <Checkbox checked={usuario.receberEmail} readOnly />
@@ -143,7 +151,13 @@ export default function EditarUsuario() {
         ) : error ? (
           <Text c="red">{error}</Text>
         ) : (
-          <Table striped highlightOnHover withTableBorder withColumnBorders>
+          <Table
+            
+            striped
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+          >
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Nome</Table.Th>
@@ -214,7 +228,7 @@ export default function EditarUsuario() {
             }
           />
           <Radio
-          p="sm"
+            p="sm"
             id="receberEmail"
             label="Quero receber novidades no e-mail."
             value={String(editingUsuario?.receberEmail || false)}

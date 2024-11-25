@@ -1,4 +1,4 @@
-import { BuscarArtesaoPorId, buscarUrlDaImagem } from "../../services/Api";
+import { buscarArtesaoPorId, buscarUrlDaImagem } from "../../services/Api";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { ArtesaoModel } from "../../models/ArtesaoModel";
 import { Link, useParams } from "react-router-dom";
@@ -15,20 +15,21 @@ import {
   Center,
   Button,
   Alert,
+  Image,
   Checkbox,
 } from "@mantine/core";
 
 export default function ExibirArtesao() {
   const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-  const [showAlert, setShowAlert] = useState(true);
+  const [, setErro] = useState<string | null>(null);
+  const [showAlert] = useState(true);
 
   const [artesao, setArtesao] = useState<ArtesaoModel | null>(null);
   const { id } = useParams<{ id?: string }>();
   // Verifica se o id é válido antes de usá-lo
   const artesaoId = id && id.startsWith("id=") ? id.split("=")[1] : id;
   console.log("ID recebido via URL corrigido:", artesaoId);
-  
+
   const icon = <HiGift />;
 
   function acessaArtesaoComID() {
@@ -41,7 +42,7 @@ export default function ExibirArtesao() {
     const carregarArtesao = async () => {
       try {
         // Buscar artesão
-        const artesaoEncontrado = await BuscarArtesaoPorId(artesaoId);
+        const artesaoEncontrado = await buscarArtesaoPorId(artesaoId);
         setArtesao(artesaoEncontrado);
 
         // Verificar se a URL da imagem existe e buscar
@@ -72,8 +73,6 @@ export default function ExibirArtesao() {
     };
 
     buscarImagem();
-    // Reexecuta a função sempre que 'artesao' mudar
-
     carregarArtesao();
   }, [id]);
 
@@ -95,10 +94,28 @@ export default function ExibirArtesao() {
         <Text size="xl" w={700} mb="md">
           Perfil do {artesao.nomeArtesao}
         </Text>
+        <Link to={`/EditarArtesao/${artesaoId}`}>
+          <Button variant="filled" color="orange">
+            Editar
+          </Button>
+        </Link>
         {/* Exibe a imagem de perfil e o nome do artesão */}
         <Center>
           <Group align="center" mb="xl">
-            <Avatar
+            <Image
+              radius="md"
+              h={300}
+              w="auto"
+              fit="contain"
+              id="imagemPerfil"
+              src={
+                artesao.imagemPerfil?.startsWith("data:image")
+                  ? urlDaImagem
+                  : `data:image/png;base64,${artesao.imagemPerfil}`
+              }
+              alt={`Foto de ${artesao.nomeArtesao}`}
+            />
+            {/* <Avatar
               size="xl"
               radius="xl"
               id="imagemPerfil"
@@ -108,7 +125,7 @@ export default function ExibirArtesao() {
                   : `data:image/png;base64,${artesao.imagemPerfil}`
               }
               alt={`Foto de ${artesao.nomeArtesao}`}
-            />
+            /> */}
           </Group>
         </Center>
         <SimpleGrid cols={2}>
@@ -205,10 +222,11 @@ export default function ExibirArtesao() {
         </SimpleGrid>
         {/* Informações de endereço */}
         <Divider label="Obras do Artista" mt="md" mb="md" />
-        <Link to={acessaArtesaoComID()}
-        onClick={() => {
-          if (artesaoId) localStorage.setItem("artesaoId", artesaoId);
-        }}>
+        <Link
+          to={acessaArtesaoComID()}
+          onClick={() => {
+            if (artesaoId) localStorage.setItem("artesaoId", artesaoId);
+          }}>
           <Button variant="filled" color="green">
             Cadastrar
           </Button>

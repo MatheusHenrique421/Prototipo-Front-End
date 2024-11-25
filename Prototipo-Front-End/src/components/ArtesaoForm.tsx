@@ -1,5 +1,5 @@
 import { ArtesaoModel } from "../models/ArtesaoModel";
-import { cadastrarArtesao } from "../services/Api";
+import { atualizaArtesao, buscarArtesaoPorId, cadastrarArtesao } from "../services/Api";
 import { useNavigate } from "react-router-dom";
 import { useState, FormEvent } from "react";
 import { IMaskInput } from "react-imask";
@@ -15,51 +15,54 @@ import {
   Checkbox,
   TextInput,
   Button,
-  Text,
 } from "@mantine/core";
 
-const ArtesaoForm: React.FC = () => {
-  const [, setErrorMessage] = useState<string>("");
+interface ArtesaoFormProps {
+  artesao: ArtesaoModel;
+  onSubmit: (updatedArtesao: ArtesaoModel) => void;
+}
+
+const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
+  const [imagemRedimensionada, setImagemRedimensionada] = useState<string|null>(null);
   const usuarioId = localStorage.getItem("usuarioId"); // Recupere o ID do usuário
-  const [imagemRedimensionada, setImagemRedimensionada] = useState<string | null>(null);
-  // Gerando um GUID para o id do artesão
-  const artesaoId = crypto.randomUUID();
-  const [artesao, setArtesao] = useState<ArtesaoModel>({
-    id: artesaoId,
-    nomeArtesao: "",
-    telefone: "",
-    whatsApp: "",
-    descricaoPerfil: "",
-    usuarioId: usuarioId || "",    
-    receberEncomendas: false,
-    enviaEncomendas: false,
-    imagemPerfil: "",
-    fotoUrl: "",
-    CEP: "",
-    estado: "",
-    cidade: "",
-    rua: "",
-    bairro: "",
-    complemento: "",
-    numero: "",
-    semNumero: false,
-  });
+  const [, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();
+
+  const [artesaoState, setArtesao] = useState<ArtesaoModel>({
+    id: artesao.id || crypto.randomUUID(),
+    nomeArtesao: artesao.nomeArtesao || "",
+    telefone: artesao.telefone || "",
+    whatsApp: artesao.whatsApp || "",
+    descricaoPerfil: artesao.descricaoPerfil || "",
+    usuarioId: usuarioId || "",
+    receberEncomendas: artesao.receberEncomendas || false,
+    enviaEncomendas: artesao.enviaEncomendas || false,
+    imagemPerfil: artesao.imagemPerfil || "",
+    fotoUrl: artesao.fotoUrl || "",
+    CEP: artesao.CEP || "",
+    estado: artesao.estado || "",
+    cidade: artesao.cidade || "",
+    rua: artesao.rua || "",
+    bairro: artesao.bairro || "",
+    complemento: artesao.complemento || "",
+    numero: artesao.numero || "",
+    semNumero: artesao.semNumero || false,
+  });
 
   // Função que busca as informações do CEP
   const buscarCep = async () => {
-    if (!artesao.CEP) return; // Se o CEP estiver vazio, não faz a requisição
+    if (!artesaoState.CEP) return; // Se o CEP estiver vazio, não faz a requisição
 
     try {
       const response = await fetch(
-        `https://viacep.com.br/ws/${artesao.CEP}/json/`
+        `https://viacep.com.br/ws/${artesaoState.CEP}/json/`
       );
       const data = await response.json();
 
       // Verifica se a resposta é válida
       if (!data.erro) {
         setArtesao({
-          ...artesao,
+          ...artesaoState,
           estado: data.uf,
           cidade: data.localidade,
           rua: data.logradouro,
@@ -80,27 +83,21 @@ const ArtesaoForm: React.FC = () => {
       setErrorMessage(String(error));
       alert("Erro ao buscar o CEP. Tente novamente mais tarde.");
     }
-  };  
+  };
 
   const redimensionarImagem = (file: File) => {
     const reader = new FileReader();
-
     reader.onload = (e: any) => {
       const img = new Image();
       img.src = e.target.result;
-
       img.onload = () => {
-        // Criando o canvas
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-
-        // Defina as novas dimensões da imagem (por exemplo, 200x200px)
-        const MAX_WIDTH = 200;
-        const MAX_HEIGHT = 200;
+        const MAX_WIDTH = 1000;  // Diminuir a largura para um tamanho mais razoável
+        const MAX_HEIGHT = 1000; // Ajuste a altura de acordo
         let width = img.width;
         let height = img.height;
-
-        // Calcula a nova largura e altura proporcionalmente
+  
         if (width > height) {
           if (width > MAX_WIDTH) {
             height = (height * MAX_WIDTH) / width;
@@ -112,48 +109,39 @@ const ArtesaoForm: React.FC = () => {
             height = MAX_HEIGHT;
           }
         }
-
-        // Definindo as dimensões no canvas
+  
         canvas.width = width;
         canvas.height = height;
-
-        // Desenhando a imagem no canvas redimensionado
         ctx?.drawImage(img, 0, 0, width, height);
-
-        // Convertendo a imagem redimensionada de volta para Base64
-        const imagemBase64 = canvas.toDataURL("image/jpeg");
-        setImagemRedimensionada(imagemBase64); // Armazena a imagem redimensionada
+        const imagemBase64 = canvas.toDataURL("image/jpeg", 0.8); // Comprimir um pouco a imagem
+        setImagemRedimensionada(imagemBase64);
       };
     };
-
-    // Lê o arquivo da imagem
     reader.readAsDataURL(file);
   };
+  
 
   const handleFileChange = (file: File | null) => {
     if (file) {
+      // Verifique o tipo da imagem
+      const fileType = file.type;
+      if (fileType !== 'image/jpeg' && fileType !== 'image/png') {
+        alert('Formato de arquivo não suportado. Apenas JPEG e PNG são permitidos.');
+        return;
+      }
+      // Processa a imagem normalmente
       const reader = new FileReader();
-  
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
-          const base64String = reader.result.split(',')[1]; // Obtém a string base64 sem o prefixo
+          const base64String = reader.result.split(',')[1];
           setArtesao({
-            ...artesao,
-            imagemPerfil: base64String, // Atualiza o estado com a imagem em base64
+            ...artesaoState,
+            imagemPerfil: base64String,
           });
-          console.log(base64String); // Exibe a base64 no console
         }
       };
-      console.log(file);
       redimensionarImagem(file);
-      // Lê a imagem como uma URL de dados (Base64)
       reader.readAsDataURL(file);
-
-    } else {
-      setArtesao({
-        ...artesao,
-        imagemPerfil: "", // Limpa o estado se nenhum arquivo for selecionado
-      });
     }
   };
   
@@ -208,30 +196,51 @@ const ArtesaoForm: React.FC = () => {
   // Função de submit para cadastrar o artesão
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+   
+    console.log("Tentando cadastrar Artesão:",JSON.stringify(artesaoState, null, 2));
 
-    console.log("Tentando cadastrar Artesão:", JSON.stringify(artesao, null, 2));        
+    try {
+      // Verificar se o artesão já existe com o ID informado
+      if (artesaoState.id) {
+        const artesaoExistente = await buscarArtesaoPorId(artesaoState.id);
 
-    try {      
-      const data = await cadastrarArtesao(artesao);
-      
-      console.log("Usuário cadastrado com sucesso. Dados retornados da API:", JSON.stringify(data, null, 2));
-      
+        if (artesaoExistente) {
+          // Se o ID já existe, faz a edição
+          const dadosEditados = await atualizaArtesao(artesaoState.id, artesaoState);
+          console.log("Artesão editado com sucesso:", dadosEditados);
+
+          alert("Artesão editado com sucesso!");
+          navigate(`/ExibirArtesao/${artesaoState.id}`);
+          return;
+        }
+      }
+
+      // Caso o ID não exista, faz o cadastro
+      const data = await cadastrarArtesao(artesaoState);
+
+      console.log(
+        "Usuário cadastrado com sucesso. Dados retornados da API:",
+        JSON.stringify(data, null, 2)
+      );
+
       alert("Artesão cadastrado com sucesso!");
-      // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)      
-      navigate(`/ExibirArtesao/${artesao.id}`);      
+      // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
+      navigate(`/ExibirArtesao/${artesaoState.id}`);
     } catch (error: any) {
-        setErrorMessage(error.message);
-        
-      console.log("Tamanho da string base64:", artesao.imagemPerfil.length);
+      setErrorMessage(error.message);
+
+      console.log(
+        "Tamanho da string base64:",
+        artesaoState.imagemPerfil.length
+      );
       console.error("Erro ao cadastrar Artesão:", error.message || error);
-      console.log(artesao);    
+      console.log(artesaoState);
     }
-  };
+};
 
   return (
     <section>
       <Container>
-        <Text>Cadastrar Artesão</Text>
         <Center>
           <form onSubmit={handleSubmit}>
             <Fieldset legend="Informações do Artesão">
@@ -261,7 +270,7 @@ const ArtesaoForm: React.FC = () => {
                   placeholder="Nome do perfil"
                   type="text"
                   id="nomeArtesao"
-                  value={artesao.nomeArtesao}
+                  value={artesaoState.nomeArtesao}
                   onChange={handleChange}
                   required
                 />
@@ -271,7 +280,7 @@ const ArtesaoForm: React.FC = () => {
                   label="Telefone:"
                   placeholder="(99) 9 9999-9999"
                   id="telefone"
-                  value={artesao.telefone}
+                  value={artesaoState.telefone}
                   onChange={handleChangeInput}
                   component={IMaskInput}
                   mask="(00) 0 0000-0000"
@@ -284,7 +293,7 @@ const ArtesaoForm: React.FC = () => {
                   placeholder="(99) 9 9999-9999"
                   id="whatsApp"
                   component={IMaskInput}
-                  value={artesao.whatsApp}
+                  value={artesaoState.whatsApp}
                   onChange={handleChangeInput}
                   mask="(00) 0 0000-0000"
                   type="text"
@@ -296,7 +305,7 @@ const ArtesaoForm: React.FC = () => {
                 resize="vertical"
                 placeholder="Descreva sobre a sua marca. min 500 caracteres"
                 id="descricaoPerfil"
-                value={artesao.descricaoPerfil}
+                value={artesaoState.descricaoPerfil}
                 onChange={handleChange}
               />
               <Fieldset legend="Informações sobre encomendas">
@@ -305,14 +314,14 @@ const ArtesaoForm: React.FC = () => {
                     p="md"
                     id="receberEncomendas"
                     label="Aceito receber encomendas."
-                    checked={artesao.receberEncomendas}
+                    checked={artesaoState.receberEncomendas}
                     onChange={handleChange}
                   />
                   <Checkbox
                     p="md"
                     id="enviaEncomendas"
                     label="Aceita enviar encomendas."
-                    checked={artesao.enviaEncomendas}
+                    checked={artesaoState.enviaEncomendas}
                     onChange={handleChange}
                   />
                 </SimpleGrid>
@@ -326,7 +335,7 @@ const ArtesaoForm: React.FC = () => {
                     placeholder="00000-000"
                     type="text"
                     id="CEP"
-                    value={artesao.CEP ? String(artesao.CEP) : ""}
+                    value={artesaoState.CEP ? String(artesaoState.CEP) : ""}
                     onChange={handleChange}
                     onBlur={buscarCep} // Chama a função ao perder o foco
                   />
@@ -338,7 +347,7 @@ const ArtesaoForm: React.FC = () => {
                     placeholder="Selecione"
                     type="text"
                     id="estado"
-                    value={artesao.estado}
+                    value={artesaoState.estado}
                     onChange={handleChange}
                   />
                   <TextInput
@@ -349,7 +358,7 @@ const ArtesaoForm: React.FC = () => {
                     placeholder="Selecione"
                     type="text"
                     id="cidade"
-                    value={artesao.cidade}
+                    value={artesaoState.cidade}
                     onChange={handleChange}
                   />
                 </SimpleGrid>
@@ -361,7 +370,7 @@ const ArtesaoForm: React.FC = () => {
                     placeholder="Rua lorem ipsum"
                     type="text"
                     id="rua"
-                    value={artesao.rua}
+                    value={artesaoState.rua}
                     onChange={handleChange}
                   />
                   <TextInput
@@ -371,7 +380,7 @@ const ArtesaoForm: React.FC = () => {
                     placeholder="Bairro exemplo x"
                     type="text"
                     id="bairro"
-                    value={artesao.bairro}
+                    value={artesaoState.bairro}
                     onChange={handleChange}
                   />
                   <TextInput
@@ -381,7 +390,7 @@ const ArtesaoForm: React.FC = () => {
                     placeholder="Apto x ou "
                     type="text"
                     id="complemento"
-                    value={artesao.complemento}
+                    value={artesaoState.complemento}
                     onChange={handleChange}
                   />
                   <TextInput
@@ -391,7 +400,7 @@ const ArtesaoForm: React.FC = () => {
                     placeholder="0000"
                     type="text"
                     id="numero"
-                    value={artesao.numero}
+                    value={artesaoState.numero}
                     onChange={handleChange}
                   />
                   <Checkbox
@@ -399,7 +408,7 @@ const ArtesaoForm: React.FC = () => {
                     ml="-100px"
                     label="Sem N°"
                     id="semNumero"
-                    checked={artesao.semNumero}
+                    checked={artesaoState.semNumero}
                     onChange={handleChange}
                   />
                 </SimpleGrid>

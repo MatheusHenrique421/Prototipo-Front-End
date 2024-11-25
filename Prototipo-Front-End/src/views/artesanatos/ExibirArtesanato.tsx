@@ -1,37 +1,29 @@
 import { BuscarArtesanatoPorId, buscarUrlDaImagem } from "../../services/Api";
-import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { ArtesanatoModel } from "../../models/ArtesanatoModel";
-import { HiOutlineMail } from "react-icons/hi";
 
 import { Link, useParams } from "react-router-dom";
 import { HiGift } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import {
   Alert,
-  Avatar,
-  Button,
   Center,
   Checkbox,
   Container,
   Divider,
-  Group,
   SimpleGrid,
   Text,
   Image,
   Badge,
-  Box,
-  Portal,
   Fieldset,
   Flex,
 } from "@mantine/core";
 import { Carousel } from "@mantine/carousel";
-import { __BaseInputProps } from "./../../../node_modules/@mantine/core/lib/components/Input/Input.d";
 import WhatsAppLink from "../../components/WhatsAppLink";
 
 export default function ExibirArtesanato() {
-  const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-  const [showAlert, setShowAlert] = useState(true);
+  const [, setUrlDaImagem] = useState<string | null>(null);
+  const [, setErro] = useState<string | null>(null);
+  const [showAlert] = useState(true);
 
   const [artesanato, setArtesanato] = useState<ArtesanatoModel | null>(null);
   const { id } = useParams<{ id?: string }>();
@@ -155,7 +147,11 @@ export default function ExibirArtesanato() {
           direction="row"
           wrap="wrap"
         >
-          <Badge size="lg" color={artesanato.sobEncomenda ? "orange" : "null"} mt="xs">
+          <Badge
+            size="lg"
+            color={artesanato.sobEncomenda ? "orange" : "null"}
+            mt="xs"
+          >
             {artesanato.sobEncomenda ? "Somente sob encomenda" : ""}
           </Badge>
           {!artesanato.sobEncomenda && (
@@ -189,10 +185,10 @@ export default function ExibirArtesanato() {
               </SimpleGrid>
             </Text>
           </Fieldset>
-          <Text  size="md" ta="center" w={500} p="xl" c={"red"}>
+          <Text size="md" ta="center" w={500} p="xl" c={"red"}>
             {artesanato.descricaoArtesanato}
           </Text>
-        </SimpleGrid>        
+        </SimpleGrid>
         <Fieldset legend="Descrição sobre o artesanato">
           <SimpleGrid cols={2}>
             <Text size="lg" w={500}>

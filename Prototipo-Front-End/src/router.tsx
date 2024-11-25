@@ -13,20 +13,22 @@ import { Home } from "./views/home/Home";
 import Login from "./views/login/Login";
 import ExibirArtesanato from "./views/artesanatos/ExibirArtesanato";
 import ListarArtesanatos from "./views/artesanatos/ListarArtesanatos";
+import EditarArtesao from "./views/artesaos/EditarArtesao";
 
 const router = createBrowserRouter([
   {
     //path: "/",
-    element: <RootLayout />, 
+    element: <RootLayout />,
     children: [
-      { index: true, path: "Home", element: <Home /> }, 
-      
+      { index: true, path: "Home", element: <Home /> },
+
       { path: "CadastrarUsuario", element: <CadastrarUsuario /> },
       { path: "ListarUsuarios", element: <ListarUsuarios /> },
       { path: "EditarUsuario", element: <EditarUsuario /> },
 
-      { path: "CadastrarArtesao/:usuarioId", element: <CadastrarArtesao /> },
       { path: "ListarArtesaos", element: <ListarArtesaos /> },
+      { path: "CadastrarArtesao/:usuarioId", element: <CadastrarArtesao /> },
+      { path: "EditarArtesao/:id", element: <EditarArtesao /> },
       { path: "ExibirArtesao/:id", element: <ExibirArtesao /> },
 
       { path: "CadastrarArtesanato", element: <CadastrarArtesanato /> },
@@ -35,7 +37,7 @@ const router = createBrowserRouter([
       { path: "Artesanatos", element: <Artesanatos /> },
       { path: "Teste", element: <Teste /> },
     ],
-  },  
+  },
   {
     path: "/login",
     element: <Login />,

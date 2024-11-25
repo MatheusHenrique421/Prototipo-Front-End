@@ -56,20 +56,52 @@ export const listarUsuarios = async (): Promise<UsuarioModel[]> => {
 //#endregion "My Region"
 
 //#region ----------------------------------------------- ARTESÃOS  -------------------------------------------------// 
-// Função de cadastro do artesão
+// LISTAR ARTESÃOS   - GET
+export const listarArtesaos = async (): Promise<ArtesaoModel[]> => {
+  // Passa o tipo de resposta como um array de UsuarioModel
+  const artesaos = await apiRequest<ArtesaoModel[]>("artesao", null, "GET");
+  console.log("Usuários retornados da API:", JSON.stringify(artesaos, null, 2));
+  return artesaos
+};
+// CADASTRAR ARTESÃO - POST
 export const cadastrarArtesao = async (artesao: ArtesaoModel) => {
   return apiRequest("artesao", artesao);
 };
+//ATUALIZAR ARTESÃO  - PUT
+export const atualizaArtesao = async (id: string, artesaoAtualizado: Partial<ArtesaoModel>): Promise<ArtesaoModel> => {
+  if (!id) {
+    throw new Error("O ID do artesão é inválido.");
+  }
 
-// Função de Exibir o cadastro  artesão
-export const exibirArtesao = async (): Promise<ArtesaoModel[]> => {
-  const artesao = await apiRequest<ArtesaoModel[]>("artesao", null, "GET");
-  console.log("Usuários retornados da API:", JSON.stringify(artesao, null, 2));
-  return artesao
+  if (!artesaoAtualizado || Object.keys(artesaoAtualizado).length === 0) {
+    throw new Error("Os dados para atualização são inválidos.");
+  }
+
+  try {
+    const artesao = await apiRequest<ArtesaoModel>(`artesao/${id}`, artesaoAtualizado, "PUT");
+    console.log("Artesão atualizado:", JSON.stringify(artesao, null, 2));
+    return artesao;
+  } catch (error) {
+    console.error("Erro ao atualizar o artesão:", error);
+    throw new Error("Erro ao atualizar o artesão. Tente novamente mais tarde.");
+  }
 };
+//EXCLUIR ARTESÃO    - DELETE
+export const deleteArtesao = async (id: string): Promise<void> => {
+  if (!id) {
+    throw new Error("O ID do artesão é inválido.");
+  }
 
-// Função para obter artesão por ID
-export const BuscarArtesaoPorId = async (id: string): Promise<ArtesaoModel> => {
+  try {
+    await apiRequest<void>(`artesao/${id}`, null, "DELETE");
+    console.log(`Artesão com ID ${id} foi excluído com sucesso.`);
+  } catch (error) {
+    console.error("Erro ao excluir artesão:", error);
+    throw new Error("Erro ao excluir artesão. Tente novamente mais tarde.");
+  }
+};
+//BUSCAR [POR ID]    - GETBYID
+export const buscarArtesaoPorId = async (id: string): Promise<ArtesaoModel> => {
   if (!id) {
     throw new Error("O ID do artesão é inválido.");
   }
@@ -83,14 +115,22 @@ export const BuscarArtesaoPorId = async (id: string): Promise<ArtesaoModel> => {
     throw new Error("Erro ao buscar artesão. Tente novamente mais tarde.");
   }
 };
+//BUCAR [POR NOME]   - GETBYNAME
+export const buscarArtesaoPorNome = async (nome: string): Promise<ArtesaoModel | null> => {
+  if (!nome) {
+    throw new Error("O nome do artesão é inválido.");
+  }
 
-// Função de cadastro do artesão GETALL
-export const listarArtesaos = async (): Promise<ArtesaoModel[]> => {
-  // Passa o tipo de resposta como um array de UsuarioModel
-  const artesaos = await apiRequest<ArtesaoModel[]>("artesao", null, "GET");
-  console.log("Usuários retornados da API:", JSON.stringify(artesaos, null, 2));
-  return artesaos
+  try {
+    const artesao = await apiRequest<ArtesaoModel>(`Artesao/ObterNomeArtesanato/${nome}`, null, "GET");
+    console.log("Artesão retornado da API:", JSON.stringify(artesao, null, 2));
+    return artesao || null; // Retorna null caso não encontre
+  } catch (error) {
+    console.error("Erro ao buscar artesão por nome:", error);
+    throw new Error("Erro ao buscar artesão. Tente novamente mais tarde.");
+  }
 };
+
 //#endregion
 
 //#region ----------------------------------------------- ARTESANATOS  -------------------------------------------------// 
@@ -124,7 +164,7 @@ export const BuscarArtesanatoPorId = async (id: string): Promise<ArtesanatoModel
 
 // Função assíncrona para buscar a URL da imagem
 export const buscarUrlDaImagem = async (id: string): Promise<string | null> => {
-  
+
   try {
     const data = await apiRequest<{ imagemBase64: string; mimeType: string }>(
       `artesao/ObterImagemArtesao?id=${id}`,

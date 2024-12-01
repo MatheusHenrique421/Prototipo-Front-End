@@ -1,6 +1,6 @@
 import { TbHome, TbNotes, TbCubeSend  } from "react-icons/tb";
 import { ArtesaoModel } from "../../models/ArtesaoModel";
-import { buscarUrlDaImagem } from "../../services/Api";
+import { buscarUrlDaImagemArtesao } from "../../services/Api";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -37,7 +37,7 @@ export default function CardArtesao({ artesao }: CardArtesaoProps) {
           setUrlDaImagem(imagemBase64);
         } else {
           // Caso a imagem não esteja disponível, tenta buscar da API
-          const url = await buscarUrlDaImagem(artesao.id);
+          const url = await buscarUrlDaImagemArtesao(artesao.id);
           if (url) {
             setUrlDaImagem(url);
           } else {

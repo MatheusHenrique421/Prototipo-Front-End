@@ -1,9 +1,11 @@
 import { Badge, Button, Card, Text, Image } from "@mantine/core";
 import { ArtesanatoModel } from "../../models/ArtesanatoModel";
-import { buscarUrlDaImagem } from "../../services/Api";
+import { buscarUrlDaImagemArtesanato } from "../../services/Api";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Carousel } from "@mantine/carousel";
+//import { format } from "date-fns";
+
 
 interface CardArtesanatoProps {
   artesanato: ArtesanatoModel;
@@ -21,13 +23,13 @@ export default function CardArtesanato({ artesanato }: CardArtesanatoProps) {
     }
     const carregarImagem = async () => {
       try {
-        if (artesanato.imagensArtesanato) {
+        if (artesanato.imagem) {
           // Se `imagemPerfil` já é Base64, não é necessário converter
-          const imagemBase64 = `data:image/png;base64,${artesanato.imagensArtesanato}`;
+          const imagemBase64 = `data:image/png;base64,${artesanato.imagem}`;
           setUrlDaImagem(imagemBase64);
         } else {
           // Caso a imagem não esteja disponível, tenta buscar da API
-          const url = await buscarUrlDaImagem(artesanato.id);
+          const url = await buscarUrlDaImagemArtesanato(artesanato.id);
           if (url) {
             setUrlDaImagem(url);
           } else {
@@ -38,7 +40,7 @@ export default function CardArtesanato({ artesanato }: CardArtesanatoProps) {
         setErro(error.message || "Erro ao carregar a imagem.");
       }
     };
-    //carregarImagem()
+    carregarImagem();
   }, [artesanato]);
 
   return (
@@ -55,7 +57,7 @@ export default function CardArtesanato({ artesanato }: CardArtesanatoProps) {
             <Image
               id="descricaoPerfil"
               src={urlDaImagem}
-              alt={`Foto de ${artesanato.tituloArtesanato}`}              
+              alt={`Foto de ${artesanato.tituloArtesanato}`}
               fit="cover"
               p="sm"
             />
@@ -78,7 +80,40 @@ export default function CardArtesanato({ artesanato }: CardArtesanatoProps) {
           </Carousel.Slide>
         </Carousel>
       </Card.Section>
-
+      {/* <Card.Section>
+        {artesanato.imagem &&
+        artesanato.imagem.length > 0 ? (
+          <Carousel
+            withIndicators
+            slideSize="100%"
+            slideGap="md"
+            loop
+            align="start"
+          >
+            {artesanato.imagem.map((imagem, index) => {
+              const src = validarBase64(imagem)
+                ? imagem
+                : `data:image/png;base64,${imagem}`;
+              return (
+                <Carousel.Slide key={index}>
+                  <Image
+                    src={src}
+                    alt={`Imagem ${index + 1} de ${
+                      artesanato.tituloArtesanato
+                    }`}
+                    fit="cover"
+                    p="sm"
+                  />
+                </Carousel.Slide>
+              );
+            })}
+          </Carousel>
+        ) : (
+          <Text c="dimmed" size="sm">
+            Nenhuma imagem disponível.
+          </Text>
+        )}
+      </Card.Section> */}
       <Text fw={500} mt="md">
         {artesanato.tituloArtesanato}
       </Text>
@@ -97,7 +132,7 @@ export default function CardArtesanato({ artesanato }: CardArtesanatoProps) {
         {/* E-mail: {artesanato.email} */}
       </Text>
       <Text size="sm" c="dimmed" mt="xs">
-       R$: {artesanato.precoArtesanato}
+        R$: {artesanato.preco}
       </Text>
       <Text size="sm" c="dimmed" mt="xs">
         Tempo levado para produzir {artesanato.tempoCriacaoHr}

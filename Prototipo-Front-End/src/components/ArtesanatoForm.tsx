@@ -1,7 +1,8 @@
-import { ArtesanatoModel } from "../models/ArtesanatoModel";
-import { useState } from "react";
-import { cadastrarArtesanato } from "../services/Api";
+import { ArtesanatoModel, getHoraAtual } from "../models/ArtesanatoModel";
 import { useNavigate, useParams } from "react-router-dom";
+import { cadastrarArtesanato } from "../services/Api";
+//import { format } from "date-fns";
+import { useState } from "react";
 import {
   Avatar,
   Button,
@@ -26,29 +27,28 @@ const ArtesanatoForm: React.FC = () => {
   const [, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
-  const idCorreto = id && id.startsWith("id=") ? id.split("=")[1] : id;
+  //const idCorreto = id && id.startsWith("id=") ? id.split("=")[1] : id;
   const artesaoIdFromParams = id?.startsWith("id=") ? id.split("=")[1] : id;
-  const artesaoId =
-    artesaoIdFromParams || localStorage.getItem("artesaoId") || "";
+  const artesaoId = artesaoIdFromParams || localStorage.getItem("artesaoId") || "";
   const artesanatoId = crypto.randomUUID();
-  const [artesanato, setArtesao] = useState<ArtesanatoModel>({
-    id: artesanatoId,
+  const [artesanato, setArtesanato] = useState<ArtesanatoModel>({
+    id: artesanatoId || crypto.randomUUID(),
     usuarioId: "",
     artesaoId: artesaoId || "",
-    imagensArtesanato: [],
+    imagemUrl: [],
+    imagem: [] as (string | File)[],
     sobEncomenda: false,
-    categoriaTags: [],
     tituloArtesanato: "",
-    precoArtesanato: 0,
-    quantidadeArtesanato: 0,
+    categoriaTags: [],
     descricaoArtesanato: "",
+    preco: 0,
+    quantidadeArtesanato: 0,
     larguraArtesanato: 0,
     alturaArtesanato: 0,
     comprimentoArtesanato: 0,
     pesoArtesanato: 0,
-    dataCriacao: new Date(), // Data atual
-    //tempoCriacaoHr: getHoraAtual(), // Hora e minutos atuais no formato HH:mm
-    tempoCriacaoHr: "00:00:00", // Exemplo de 1.5 horas formatado para "01:30:00"
+    dataCriacao: new Date(),
+    tempoCriacaoHr: getHoraAtual(), // Hora e minutos atuais no formato HH:mm    
   });
 
   const compressImage = (
@@ -56,68 +56,87 @@ const ArtesanatoForm: React.FC = () => {
     maxWidth: number,
     maxHeight: number,
     quality: number
-  ): Promise<string> => {
+  ): Promise<File | null> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        img.src = reader.result as string;
-      };
+      img.src = URL.createObjectURL(file);
 
       img.onload = () => {
-        // Calcula as novas dimensões mantendo a proporção
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
-        const width = img.width * ratio;
-        const height = img.height * ratio;
 
-        canvas.width = width;
-        canvas.height = height;
+        if (ctx) {
+          const width = img.width;
+          const height = img.height;
 
-        // Desenha a imagem no canvas
-        ctx?.drawImage(img, 0, 0, width, height);
+          // Calcula a nova largura e altura mantendo a proporção da imagem
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          const newWidth = width * ratio;
+          const newHeight = height * ratio;
 
-        // Converte a imagem para base64 com a qualidade desejada
-        const compressedDataUrl = canvas.toDataURL(file.type, quality);
-        resolve(compressedDataUrl);
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: file.type,
+                });
+                resolve(compressedFile);
+              } else {
+                reject("Erro ao compactar a imagem.");
+              }
+            },
+            file.type,
+            quality
+          );
+        } else {
+          reject("Não foi possível obter o contexto do canvas.");
+        }
       };
 
       img.onerror = () => {
-        reject(new Error("Erro ao carregar imagem"));
+        reject("Erro ao carregar a imagem.");
       };
-
-      reader.readAsDataURL(file);
     });
   };
 
   const handleFilesChange = (files: File[] | null) => {
     if (files && files.length > 0) {
-      const fileReaders: Promise<string>[] = Array.from(files).map((file) => {
-        return compressImage(file, 800, 800, 0.7) // Ajuste o tamanho máximo e a qualidade
-          .then((compressedImage) => compressedImage)
-          .catch((error) => {
-            console.error("Erro ao compactar a imagem:", error);
-            return ""; // Retorna uma string vazia caso haja erro na compactação
-          });
-      });
+      const fileReaders: Promise<File | null>[] = Array.from(files).map(
+        (file) => {
+          return compressImage(file, 800, 800, 0.7) // Ajuste o tamanho máximo e a qualidade
+            .then((compressedImage) => {
+              return compressedImage as File | null; // Garante que o retorno seja File ou null
+            })
+            .catch((error) => {
+              console.error("Erro ao compactar a imagem:", error);
+              return null; // Retorna null em caso de erro
+            });
+        }
+      );
 
+      // Após a compactação, atualiza o estado com todos os arquivos compactados
       Promise.all(fileReaders)
-        .then((base64Images) => {
-          setArtesao({ ...artesanato, imagensArtesanato: base64Images });
+        .then((compressedFiles) => {
+          // Filtra os arquivos válidos
+          const validFiles = compressedFiles.filter(
+            (file) => file !== null
+          ) as File[];
+          // Atualiza o estado com todas as imagens válidas
+          setArtesanato({ ...artesanato, imagem: validFiles });
         })
         .catch((error) => console.error("Erro ao carregar imagens:", error));
     } else {
-      setArtesao({ ...artesanato, imagensArtesanato: [] });
+      setArtesanato({ ...artesanato, imagem: [] }); // Define como array vazio se não houver arquivos
     }
   };
 
-  const handleChange = (
-    value: string | boolean | string[] | number,
-    id: string
-  ) => {
-    setArtesao((prevState) => ({
+  const handleChange = (value: string | boolean | string[] | number, id: string) => {
+    setArtesanato((prevState) => ({
       ...prevState,
       [id]: value,
     }));
@@ -143,17 +162,46 @@ const ArtesanatoForm: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const formData = new FormData();
 
+    // Formatação da data
+    const dataFormatada = artesanato.dataCriacao ? artesanato.dataCriacao.toISOString() : null;
+    
+    // Adiciona a dataCriacao ao FormData, caso tenha um valor
+    if (dataFormatada) {
+      formData.append("dataCriacao", dataFormatada);
+    }
+    
+    // Itera sobre as propriedades do objeto artesanato
+    Object.entries(artesanato).forEach(([key, value]) => {
+      // Verifica se o valor é um arquivo (File) e adiciona ao FormData
+      if (value instanceof File) {
+        formData.append(key, value); // Adiciona o arquivo
+      } else if (Array.isArray(value)) {
+        // Se o valor for um array, você pode querer mapear ou lidar de outra maneira
+        value.forEach((item) => formData.append(key, item));
+      } else {
+        // Para qualquer outro tipo de dado, simplesmente adiciona como string ou número
+        formData.append(key, value);
+      }
+    });
+
+    // Verifique se a imagem foi selecionada antes de tentar adicioná-la
+    if (artesanato.imagem) {
+      formData.append("imagem", artesanato.imagem.toString()); // Adiciona o arquivo de imagem ao FormData
+    } else {
+      console.error("Imagem não fornecida.");
+    }
     // Exemplo de envio para a API
     console.log(
       "Dados do artesanato enviados:",
       JSON.stringify(artesanato, null, 2)
     );
     try {
-      const data = await cadastrarArtesanato(artesanato);
+      const data = await cadastrarArtesanato(formData);
 
       console.log(
-        "Usuário cadastrado com sucesso. Dados retornados da API:",
+        "Dados ENVIADOS RETORNADOS********** da API:",
         JSON.stringify(data, null, 2)
       );
 
@@ -163,10 +211,7 @@ const ArtesanatoForm: React.FC = () => {
     } catch (error: any) {
       setErrorMessage(error.message);
 
-      console.log(
-        "Tamanho da string base64:",
-        artesanato.imagensArtesanato.length
-      );
+      console.log("Tamanho da string base64:", artesanato.imagem);
       console.error("Erro ao cadastrar Artesão:", error.message || error);
       console.log(artesanato);
     }
@@ -183,13 +228,11 @@ const ArtesanatoForm: React.FC = () => {
                 <List>
                   <List.Item>Limite de 4 fotos.</List.Item>
                   <List.Item>Formato e peso: JPEG e PNG de até 10MB.</List.Item>
-                  <List.Item>Install dependencies with yarn</List.Item>
                 </List>
               </Center>
-
               <SimpleGrid cols={2}>
                 <FileInput
-                  id="imagensArtesanato"
+                  id="imagem"
                   label="Selecione os arquivos"
                   placeholder="Selecione até 4 arquivos"
                   onChange={(files) =>
@@ -203,16 +246,25 @@ const ArtesanatoForm: React.FC = () => {
               <Center>
                 <Group mt="md">
                   <SimpleGrid cols={4} spacing="sm">
-                    {artesanato.imagensArtesanato.map((src, index) => (
-                      <Avatar
-                        variant="filled"
-                        radius="sm"
-                        size="xl"
-                        key={index}
-                        src={src}
-                        alt={`Imagem ${index + 1}`}
-                      />
-                    ))}
+                    {Array.isArray(artesanato.imagem) &&
+                    artesanato.imagem.length > 0 ? (
+                      artesanato.imagem.map((img, index) => {
+                        const src =
+                          img instanceof File ? URL.createObjectURL(img) : img;
+                        return (
+                          <Avatar
+                            variant="filled"
+                            radius="sm"
+                            size="xl"
+                            key={index}
+                            src={src}
+                            alt={`Imagem ${index + 1}`}
+                          />
+                        );
+                      })
+                    ) : (
+                      <p>Nenhuma imagem disponível</p>
+                    )}
                   </SimpleGrid>
                 </Group>
               </Center>
@@ -248,9 +300,9 @@ const ArtesanatoForm: React.FC = () => {
                 <NumberInput
                   radius="md"
                   label="Preço:"
-                  placeholder="R$:"                  
-                  id="precoArtesanato"
-                  onChange={(value) => handleChange(value, "precoArtesanato")}
+                  placeholder="R$:"
+                  id="preco"
+                  onChange={(value) => handleChange(value, "preco")}
                   decimalScale={2}
                   fixedDecimalScale
                   decimalSeparator=","
@@ -282,17 +334,15 @@ const ArtesanatoForm: React.FC = () => {
                     handleChange(e.target.value, "descricaoArtesanato")
                   }
                 />
-                {/* <NumberInput
+                <NumberInput
                   radius="md"
                   label="Tempo de produção:"
                   placeholder="Em horas"
                   type="text"
                   id="tempoCriacaoHr"
                   onChange={(value) => handleChange(value, "tempoCriacaoHr")}
-                  decimalScale={2}
-                  fixedDecimalScale
-                  decimalSeparator=":"
-                /> */}
+                  decimalScale={2}                  
+                />
               </SimpleGrid>
               <Divider label="Caracteristicas do artesanato" mt="sm" />
               <SimpleGrid cols={4}>
@@ -340,7 +390,6 @@ const ArtesanatoForm: React.FC = () => {
                   decimalSeparator=","
                 />
               </SimpleGrid>
-
               <Button m="sm" type="submit" radius="md" color="orange">
                 Voltar
               </Button>

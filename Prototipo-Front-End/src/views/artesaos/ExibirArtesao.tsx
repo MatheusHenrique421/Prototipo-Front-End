@@ -1,4 +1,4 @@
-import { buscarArtesaoPorId, buscarUrlDaImagem } from "../../services/Api";
+import { buscarArtesaoPorId, buscarUrlDaImagemArtesao } from "../../services/Api";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { ArtesaoModel } from "../../models/ArtesaoModel";
 import { Link, useParams } from "react-router-dom";
@@ -46,7 +46,7 @@ export default function ExibirArtesao() {
         setArtesao(artesaoEncontrado);
 
         // Verificar se a URL da imagem existe e buscar
-        const dataUri = await buscarUrlDaImagem(artesaoId); // A função que você precisa implementar
+        const dataUri = await buscarUrlDaImagemArtesao(artesaoId); // A função que você precisa implementar
         if (dataUri) {
           setUrlDaImagem(dataUri);
         }
@@ -63,7 +63,7 @@ export default function ExibirArtesao() {
     const buscarImagem = async () => {
       try {
         // Buscando a URL da imagem usando o ID do artesão
-        const dataUri = await buscarUrlDaImagem(artesaoId);
+        const dataUri = await buscarUrlDaImagemArtesao(artesaoId);
         console.log("ID do Artesão:", artesaoId);
         setUrlDaImagem(dataUri); // Atualiza o estado com a URL da imagem
       } catch (err) {

@@ -1,9 +1,13 @@
-import { BuscarArtesanatoPorId, buscarUrlDaImagem } from "../../services/Api";
+import {
+  BuscarArtesanatoPorId,
+  buscarUrlDaImagemArtesanato,
+} from "../../services/Api";
 import { ArtesanatoModel } from "../../models/ArtesanatoModel";
-
+import WhatsAppLink from "../../components/WhatsAppLink";
 import { Link, useParams } from "react-router-dom";
-import { HiGift } from "react-icons/hi";
+import { Carousel } from "@mantine/carousel";
 import { useEffect, useState } from "react";
+import { HiGift } from "react-icons/hi";
 import {
   Alert,
   Center,
@@ -17,15 +21,12 @@ import {
   Fieldset,
   Flex,
 } from "@mantine/core";
-import { Carousel } from "@mantine/carousel";
-import WhatsAppLink from "../../components/WhatsAppLink";
 
 export default function ExibirArtesanato() {
-  const [, setUrlDaImagem] = useState<string | null>(null);
+  const [artesanato, setArtesanato] = useState<ArtesanatoModel | null>(null);
   const [, setErro] = useState<string | null>(null);
   const [showAlert] = useState(true);
 
-  const [artesanato, setArtesanato] = useState<ArtesanatoModel | null>(null);
   const { id } = useParams<{ id?: string }>();
   // Verifica se o id é válido antes de usá-lo
   const artesanatoId = id && id.startsWith("id=") ? id.split("=")[1] : id;
@@ -44,12 +45,6 @@ export default function ExibirArtesanato() {
         const artesaoEncontrado = await BuscarArtesanatoPorId(artesanatoId);
         setArtesanato(artesaoEncontrado);
 
-        // Verificar se a URL da imagem existe e buscar
-        const dataUri = await buscarUrlDaImagem(artesanatoId); // A função que você precisa implementar
-        if (dataUri) {
-          setUrlDaImagem(dataUri);
-        }
-
         console.log(
           `Artesão Encontrado: ${JSON.stringify(artesaoEncontrado, null, 2)}`
         );
@@ -58,21 +53,6 @@ export default function ExibirArtesanato() {
         setErro("Erro ao carregar dados do artesão ou sua imagem.");
       }
     };
-
-    const buscarImagem = async () => {
-      try {
-        // Buscando a URL da imagem usando o ID do artesão
-        const dataUri = await buscarUrlDaImagem(artesanatoId);
-        console.log("ID do Artesão:", artesanatoId);
-        setUrlDaImagem(dataUri); // Atualiza o estado com a URL da imagem
-      } catch (err) {
-        setErro("Erro ao carregar a imagem. Tente novamente mais tarde.");
-        console.error("Erro ao buscar a imagem:", err);
-      }
-    };
-
-    buscarImagem();
-    // Reexecuta a função sempre que 'artesao' mudar
 
     carregarArtesao();
   }, [id]);
@@ -107,40 +87,41 @@ export default function ExibirArtesanato() {
         </Text>
         {/* Exibe a imagem de perfil e o nome do artesão */}
         <Carousel
-          withIndicators
-          slideSize="100%"
-          slideGap="md"
+          withIndicators          
+          slideGap="sm"
           loop
           align="start"
         >
-          <Carousel.Slide>
-            <Image
-              id="descricaoPerfil"
-              src="https://via.placeholder.com/400x200/3dx43xxdf/ghjghj?text=Slide+1"
-              alt={`Foto de ${artesanato.tituloArtesanato}`}
-              fit="cover"
-              p="sm"
-            />
-          </Carousel.Slide>
-          <Carousel.Slide>
-            <Image
-              src="https://via.placeholder.com/400x200/00FF00/FFFFFF?text=Slide+2"
-              alt="Slide 2"
-              fit="cover"
-              p="sm"
-            />
-          </Carousel.Slide>
-          <Carousel.Slide>
-            <Image
-              src="https://via.placeholder.com/400x200/0000FF/FFFFFF?text=Slide+3"
-              alt="Slide 3"
-              fit="cover"
-              p="sm"
-            />
-          </Carousel.Slide>
+          {artesanato?.imagemUrl &&
+            artesanato.imagemUrl.length > 0 &&
+            artesanato.imagemUrl.map((imagemUrl: string, index: number) => (
+              <Carousel.Slide key={index}>
+                <div
+                  style={{
+                    padding:"10px",
+                    margin:"10px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "#f5f5f5", // Cor de fundo para imagens pequenas                    
+                  }}
+                >
+                  <Image
+                    id={`descricaoPerfil-${index}`}
+                    src={imagemUrl.toString()} // URL direta da imagem
+                    alt={`Foto de ${artesanato.tituloArtesanato} - Imagem ${
+                      index + 1
+                    }`}
+                    fit="contain"
+                    width="70%" 
+                    height="70%"                                    
+                  />
+                </div>
+              </Carousel.Slide>
+            ))}
         </Carousel>
         <Flex
-          mt="lg"
+          mt="sm"
           gap="md"
           justify="flex-start"
           align="flex-start"

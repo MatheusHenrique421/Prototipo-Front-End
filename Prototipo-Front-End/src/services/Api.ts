@@ -7,15 +7,20 @@ import axios from "axios";
 
 const apiRequest = async <T>(url: string, data?: any, method: string = "POST"): Promise<T> => {
   try {
+    const headers: any = {
+      "Content-Type": "application/json",
+    };
+    // Verifica se a data inclui FormData (ou seja, se está lidando com arquivos)
+    if (data instanceof FormData) {
+      delete headers["Content-Type"]; // Não defina o Content-Type explicitamente para FormData
+    }
     const response = await axios({
       method,
       url: `https://localhost:7215/api/${url}`, // Substitua pela URL correta
       data,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers
     });
-    return response.data; // Retorna apenas os dados da resposta, já tipado como T
+    return response.data; // Retorna apenas os dados da resposta
   } catch (error: any) {
     // Extrai informações detalhadas do erro
     if (error.response) {
@@ -140,7 +145,7 @@ export const listarArtesanatos = async (): Promise<ArtesanatoModel[]> => {
   console.log("Artesanatos retornados da API:", JSON.stringify(artesanatos, null, 2));
   return artesanatos
 };
-export const cadastrarArtesanato = async (artesanato: ArtesanatoModel) => {
+export const cadastrarArtesanato = async (artesanato: FormData) => {
   console.log("Usuário enviado para a API:", JSON.stringify(artesanato, null, 2));
   return apiRequest("artesanato", artesanato);
 };
@@ -149,7 +154,6 @@ export const BuscarArtesanatoPorId = async (id: string): Promise<ArtesanatoModel
   if (!id) {
     throw new Error("O ID do artesanato é inválido.");
   }
-
   try {
     const artesanato = await apiRequest<ArtesanatoModel>(`artesanato/${id}`, null, "GET");
     console.log("Artesanato retornado da API:", JSON.stringify(artesanato, null, 2));
@@ -163,11 +167,33 @@ export const BuscarArtesanatoPorId = async (id: string): Promise<ArtesanatoModel
 
 
 // Função assíncrona para buscar a URL da imagem
-export const buscarUrlDaImagem = async (id: string): Promise<string | null> => {
+export const buscarUrlDaImagemArtesao = async (id: string): Promise<string | null> => {
 
   try {
     const data = await apiRequest<{ imagemBase64: string; mimeType: string }>(
       `artesao/ObterImagemArtesao?id=${id}`,
+      undefined,
+      "GET"
+    );
+
+    if (data?.imagemBase64 && data.mimeType) {
+      return `data:${data.mimeType};base64,${data.imagemBase64}`;
+    } else {
+      console.error("Imagem ou tipo MIME não encontrado na resposta da API.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Erro ao buscar a imagem do artesão:", error);
+    return null;
+  }
+};
+
+// Função assíncrona para buscar a URL da imagem
+export const buscarUrlDaImagemArtesanato = async (id: string): Promise<string | null> => {
+
+  try {
+    const data = await apiRequest<{ imagemBase64: string; mimeType: string }>(
+      `artesanato/ObterImagemArtesanato?id=${id}`,
       undefined,
       "GET"
     );

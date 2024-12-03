@@ -1,19 +1,18 @@
-import ArtesaoForm from "../../components/ArtesaoForm";
 import { ArtesaoModel } from "../../models/ArtesaoModel";
+import ArtesaoForm from "../../components/ArtesaoForm";
 
 export default function CadastrarArtesao() {
-  // Instância inicial do modelo ArtesaoModel
   const initialArtesao: ArtesaoModel = {
     id: "",
+    usuarioId: "",
     nomeArtesao: "",
     telefone: "",
     whatsApp: "",
     descricaoPerfil: "",
-    usuarioId: "",
     receberEncomendas: false,
     enviaEncomendas: false,
-    fotoUrl: "",
-    imagemPerfil: "",
+    imagemUrl: [],
+    imagem: null,
     CEP: "",
     estado: "",
     cidade: "",
@@ -22,12 +21,11 @@ export default function CadastrarArtesao() {
     complemento: "",
     numero: "",
     semNumero: false,
+    dataCadastro: new Date(),
   };
 
-  // Função de callback para manipular o envio do formulário
-  const handleSubmit = (updatedArtesao: ArtesaoModel) => {
-    console.log("Dados enviados:", updatedArtesao);
-    // Aqui você pode implementar a lógica para salvar os dados, como chamar uma API
+  const handleSubmit = (artesaoAtualizado: ArtesaoModel) => {
+    console.log("cADASTAR ARTESP TE;AA:", artesaoAtualizado);
   };
 
   return <ArtesaoForm artesao={initialArtesao} onSubmit={handleSubmit} />;

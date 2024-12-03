@@ -27,7 +27,7 @@ const router = createBrowserRouter([
       { path: "EditarUsuario", element: <EditarUsuario /> },
 
       { path: "ListarArtesaos", element: <ListarArtesaos /> },
-      { path: "CadastrarArtesao", element: <CadastrarArtesao /> },
+      { path: "CadastrarArtesao/:id", element: <CadastrarArtesao /> },
       { path: "EditarArtesao/:id", element: <EditarArtesao /> },
       { path: "ExibirArtesao/:id", element: <ExibirArtesao /> },
 

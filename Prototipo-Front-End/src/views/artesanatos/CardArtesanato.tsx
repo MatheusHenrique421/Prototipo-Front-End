@@ -1,50 +1,40 @@
-import { Badge, Button, Card, Text, Image } from "@mantine/core";
+import {
+  Badge,
+  Button,
+  Card,
+  Text,
+  Image,
+  SimpleGrid,
+} from "@mantine/core";
 import { ArtesanatoModel } from "../../models/ArtesanatoModel";
-import { buscarUrlDaImagemArtesanato } from "../../services/Api";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { Carousel } from "@mantine/carousel";
-//import { format } from "date-fns";
-
+import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 interface CardArtesanatoProps {
   artesanato: ArtesanatoModel;
 }
-
 export default function CardArtesanato({ artesanato }: CardArtesanatoProps) {
-  const [urlDaImagem, setUrlDaImagem] = useState<string | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-
-  // Verifica se o ID do Artesanato é válido antes de tentar buscar a imagem
   useEffect(() => {
     if (!artesanato.id || !artesanato.id) {
       console.warn("Artesanato ou ID inválido:", artesanato.id);
       return;
     }
-    const carregarImagem = async () => {
-      try {
-        if (artesanato.imagem) {
-          // Se `imagemPerfil` já é Base64, não é necessário converter
-          const imagemBase64 = `data:image/png;base64,${artesanato.imagem}`;
-          setUrlDaImagem(imagemBase64);
-        } else {
-          // Caso a imagem não esteja disponível, tenta buscar da API
-          const url = await buscarUrlDaImagemArtesanato(artesanato.id);
-          if (url) {
-            setUrlDaImagem(url);
-          } else {
-            throw new Error("URL da imagem é nula.");
-          }
-        }
-      } catch (error: any) {
-        setErro(error.message || "Erro ao carregar a imagem.");
-      }
-    };
-    carregarImagem();
   }, [artesanato]);
 
   return (
-    <Card shadow="xl" padding="md" radius="md" withBorder>
+    <Card
+      shadow="xl"
+      padding="md"
+      radius="md"
+      withBorder
+      style={{
+        minHeight: "400px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
       <Card.Section>
         <Carousel
           withIndicators
@@ -53,89 +43,57 @@ export default function CardArtesanato({ artesanato }: CardArtesanatoProps) {
           loop
           align="start"
         >
-          <Carousel.Slide>
-            <Image
-              id="descricaoPerfil"
-              src={urlDaImagem}
-              alt={`Foto de ${artesanato.tituloArtesanato}`}
-              fit="cover"
-              p="sm"
-            />
-          </Carousel.Slide>
-          <Carousel.Slide>
-            <Image
-              src="https://via.placeholder.com/400x200/00FF00/FFFFFF?text=Slide+2"
-              alt="Slide 2"
-              fit="cover"
-              p="sm"
-            />
-          </Carousel.Slide>
-          <Carousel.Slide>
-            <Image
-              src="https://via.placeholder.com/400x200/0000FF/FFFFFF?text=Slide+3"
-              alt="Slide 3"
-              fit="cover"
-              p="sm"
-            />
-          </Carousel.Slide>
+          {artesanato?.imagemUrl?.map((url, index) => (
+            <Carousel.Slide key={index}>
+              <Image
+                p="sm"
+                id="descricaoPerfil"
+                src={url}
+                alt={`Imagem ${index + 1} do artesanato ${
+                  artesanato.tituloArtesanato
+                }`}
+                style={{
+                  width: "100%",
+                  height: "300px", // Limita a altura
+                  objectFit: "contain", // Mantém as proporções
+                  borderRadius: "8px", // Opção estética
+                }}
+              />
+            </Carousel.Slide>
+          ))}
         </Carousel>
       </Card.Section>
-      {/* <Card.Section>
-        {artesanato.imagem &&
-        artesanato.imagem.length > 0 ? (
-          <Carousel
-            withIndicators
-            slideSize="100%"
-            slideGap="md"
-            loop
-            align="start"
-          >
-            {artesanato.imagem.map((imagem, index) => {
-              const src = validarBase64(imagem)
-                ? imagem
-                : `data:image/png;base64,${imagem}`;
-              return (
-                <Carousel.Slide key={index}>
-                  <Image
-                    src={src}
-                    alt={`Imagem ${index + 1} de ${
-                      artesanato.tituloArtesanato
-                    }`}
-                    fit="cover"
-                    p="sm"
-                  />
-                </Carousel.Slide>
-              );
-            })}
-          </Carousel>
-        ) : (
-          <Text c="dimmed" size="sm">
-            Nenhuma imagem disponível.
-          </Text>
-        )}
-      </Card.Section> */}
-      <Text fw={500} mt="md">
+      <Text fw={500} size="md">
         {artesanato.tituloArtesanato}
       </Text>
-      {/* <Badge color={artesanato.receberEncomendas ? "green" : "red"} mt="xs">
-        {artesanato.receberEncomendas
-          ? "Aceita encomendas"
-          : "Não aceita encomendas"}
-      </Badge> */}
-      <Badge color={artesanato.sobEncomenda ? "orange" : "null"} mt="xs">
+      <SimpleGrid cols={artesanato?.categoriaTags?.length || 1}>
+        {artesanato?.categoriaTags.map((tag, index) => (
+          <Badge key={index} variant="default" mt="xs" size="sm">
+            {tag}
+          </Badge>
+        ))}
+      </SimpleGrid>
+      <Badge
+        variant="outline"
+        color={artesanato.sobEncomenda ? "orange" : "null"}
+        mt="xs"
+      >
         {artesanato.sobEncomenda ? "Somente sob encomenda" : ""}
       </Badge>
-      <Text size="sm" c="dimmed">
-        {/* CPF: {artesanato.cpf} */}
-      </Text>
-      <Text size="sm" c="dimmed">
-        {/* E-mail: {artesanato.email} */}
+      {!artesanato.sobEncomenda &&
+        artesanato.quantidadeArtesanato !== undefined && (
+          <Badge color="blue" variant="outline">
+            Quantidade disponível: {artesanato.quantidadeArtesanato}
+          </Badge>
+        )}
+      <Badge variant="transparent" color="lime" mt="xs" size="sm">
+        Aceita Cartão
+      </Badge>
+      <Text size="sm" c="dimmed" mt="xs">
+        R$: {artesanato.preco},00
       </Text>
       <Text size="sm" c="dimmed" mt="xs">
-        R$: {artesanato.preco}
-      </Text>
-      <Text size="sm" c="dimmed" mt="xs">
-        Tempo levado para produzir {artesanato.tempoCriacaoHr}
+        Tempo de produção {artesanato.tempoCriacaoHr} Horas
       </Text>
       <Text size="sm" c="dimmed" mt="xs">
         {artesanato.id}

@@ -42,14 +42,11 @@ const UsuarioForm: React.FC = () => {
 
     try {
       const data = await cadastrarUsuario(usuario);
-
-
       // Logs de sucesso
       console.log(
         "Usuário cadastrado com sucesso. Dados retornados da API:",
         JSON.stringify(data, null, 2)
       );
-
       // Feedback ao usuário
       alert("Usuário cadastrado com sucesso!");
        // Redireciona para a página de cadastro de artesão, enviando o ID do usuário
@@ -137,7 +134,7 @@ const UsuarioForm: React.FC = () => {
                 />
                 <Radio
                   id="receberEmail"
-                  label="Quero receber novidades no e-mail."
+                  label="Ativar perfil de artesão."
                   value={String(usuario.receberEmail)}
                   checked={usuario.receberEmail}
                   onChange={(e) =>

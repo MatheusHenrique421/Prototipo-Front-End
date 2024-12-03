@@ -1,7 +1,4 @@
-import {
-  BuscarArtesanatoPorId,
-  buscarUrlDaImagemArtesanato,
-} from "../../services/Api";
+import { BuscarArtesanatoPorId } from "../../services/Api";
 import { ArtesanatoModel } from "../../models/ArtesanatoModel";
 import WhatsAppLink from "../../components/WhatsAppLink";
 import { Link, useParams } from "react-router-dom";
@@ -86,24 +83,19 @@ export default function ExibirArtesanato() {
           </Link>
         </Text>
         {/* Exibe a imagem de perfil e o nome do artesão */}
-        <Carousel
-          withIndicators          
-          slideGap="sm"
-          loop
-          align="start"
-        >
+        <Carousel withIndicators slideGap="sm" loop align="start">
           {artesanato?.imagemUrl &&
             artesanato.imagemUrl.length > 0 &&
             artesanato.imagemUrl.map((imagemUrl: string, index: number) => (
               <Carousel.Slide key={index}>
                 <div
                   style={{
-                    padding:"10px",
-                    margin:"10px",
+                    padding: "10px",
+                    margin: "10px",
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "#f5f5f5", // Cor de fundo para imagens pequenas                    
+                    backgroundColor: "#f5f5f5", // Cor de fundo para imagens pequenas
                   }}
                 >
                   <Image
@@ -113,8 +105,8 @@ export default function ExibirArtesanato() {
                       index + 1
                     }`}
                     fit="contain"
-                    width="70%" 
-                    height="70%"                                    
+                    width="70%"
+                    height="70%"
                   />
                 </div>
               </Carousel.Slide>
@@ -135,12 +127,12 @@ export default function ExibirArtesanato() {
           >
             {artesanato.sobEncomenda ? "Somente sob encomenda" : ""}
           </Badge>
+          <WhatsAppLink telefone={telefone} mensagem={mensagem} />
           {!artesanato.sobEncomenda && (
             <Text size="lg" w={500} ml="xl">
               Quantidade em estoque: {artesanato.quantidadeArtesanato}
             </Text>
           )}
-          <WhatsAppLink telefone={telefone} mensagem={mensagem} />
         </Flex>
         <Divider label="Como entrar em contato" mt="md" mb="md" />
         <SimpleGrid cols={4}></SimpleGrid>
@@ -159,10 +151,10 @@ export default function ExibirArtesanato() {
                 Comprimento: {artesanato.comprimentoArtesanato} cm
               </SimpleGrid>
               <SimpleGrid cols={2} p="xl">
-                Peso: {artesanato.pesoArtesanato} gr
+                {`Peso: ${artesanato.pesoArtesanato} gr`}
               </SimpleGrid>
               <SimpleGrid cols={2} p="xl">
-                Tempo de produção: {artesanato.tempoCriacaoHr}
+                Tempo de produção: {artesanato.tempoCriacaoHr} Horas.
               </SimpleGrid>
             </Text>
           </Fieldset>

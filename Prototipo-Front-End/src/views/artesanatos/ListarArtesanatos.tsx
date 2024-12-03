@@ -38,7 +38,7 @@ export default function ListarArtesanatos() {
         ) : error ? (
           <Text c="red">{error}</Text>
         ) : (
-          <SimpleGrid cols={2}>            
+          <SimpleGrid cols={3}>            
               {artesanatos.map((artesanatos) => (
                 <CardArtesanato key={artesanatos.id} artesanato={artesanatos} />
               ))}            

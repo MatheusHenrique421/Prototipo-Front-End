@@ -1,12 +1,7 @@
-import { ArtesaoModel } from "../models/ArtesaoModel";
-import {
-  atualizaArtesao,
-  buscarArtesaoPorId,
-  cadastrarArtesao,
-} from "../services/Api";
-import { useNavigate } from "react-router-dom";
-import { useState, FormEvent } from "react";
-import { IMaskInput } from "react-imask";
+import { ArtesaoFormProps, ArtesaoModel } from "../models/ArtesaoModel";
+import { atualizaArtesao, cadastrarArtesao } from "../services/Api";
+import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   Container,
   Center,
@@ -19,24 +14,19 @@ import {
   Checkbox,
   TextInput,
   Button,
+  FileInputProps,
+  Pill,
 } from "@mantine/core";
 
-interface ArtesaoFormProps {
-  artesao: ArtesaoModel;
-  onSubmit: (updatedArtesao: ArtesaoModel) => void;
-}
-
-const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
-  const [imagemRedimensionada, setImagemRedimensionada] = useState<
-    string | null
-  >(artesao.imagemPerfil || null);
-  const usuarioId = localStorage.getItem("usuarioId"); // Recupere o ID do usuário
+const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
+  const { id: usuarioId } = useParams<{ id: string }>(); // Captura o ID da rota // Captura o ID da rota
+  const [, setImagemUrl] = useState<string | null>(null);
   const [, setErrorMessage] = useState<string>("");
-  const navigate = useNavigate();
+  const navigate = useNavigate();    
 
-  const [artesaoState, setArtesao] = useState<ArtesaoModel>({
+  const [artesaoState, setArtesaoState] = useState<ArtesaoModel>({
     ...artesao,
-    id: artesao.id || crypto.randomUUID(),
+    id: artesao.id || "",
     nomeArtesao: artesao.nomeArtesao || "",
     telefone: artesao.telefone || "",
     whatsApp: artesao.whatsApp || "",
@@ -44,8 +34,8 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
     usuarioId: usuarioId || "",
     receberEncomendas: artesao.receberEncomendas || false,
     enviaEncomendas: artesao.enviaEncomendas || false,
-    imagemPerfil: artesao.imagemPerfil || "",
-    fotoUrl: artesao.fotoUrl || "",
+    imagem: artesao.imagem || null,
+    imagemUrl: artesao.imagemUrl || "",
     CEP: artesao.CEP || "",
     estado: artesao.estado || "",
     cidade: artesao.cidade || "",
@@ -56,9 +46,66 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
     semNumero: artesao.semNumero || false,
   });
 
+  const isEditing = !!artesao.id; // Define se está em modo de edição  
+
+  const handleFileChange = (file: File | null) => {
+    setArtesaoState((prevState) => ({ ...prevState, imagem: file }));
+  };
+
+  // Função para redimensionar a imagem
+  const handleChange = (value: string | boolean | string[] | number | File | null, 
+    id: keyof ArtesaoModel // 'keyof' garante que 'id' seja uma chave válida
+      ) => {
+    setArtesaoState((prevState) => ({
+      ...prevState,
+      [id]: value,
+    }));
+  };
+
+  // Função para atualizar o estado
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, type, checked, files } = e.target;
+
+    // Verifica se o campo é do tipo 'file' (imagem)
+    if (type === "file") {
+      const file = files ? files[0] : null; // Pega o primeiro arquivo, caso haja
+      // Se um arquivo foi selecionado, atualiza o estado com o arquivo
+      if (file) {
+        setArtesaoState((prevState) => ({
+          ...prevState,
+
+          [id]: [file], // Armazena o arquivo como um array com 1 item (imagem)
+        }));
+      }
+    } else {
+      // Aplica a máscara conforme o campo
+      const formataTelefones =
+        id === "telefone" || id === "whatsApp" ? mascaraTelefone(value) : value;
+
+      // Lida com checkbox para valores booleanos
+      if (type === "checkbox") {
+        setArtesaoState((prevState) => ({
+          ...prevState,
+          [id]: checked,
+        }));
+      } else {
+        setArtesaoState((prevState) => ({
+          ...prevState,
+          [id]: formataTelefones,
+        }));
+      }
+    }
+  };
+
   // Função que busca as informações do CEP
   const buscarCep = async () => {
-    if (!artesaoState.CEP) return; // Se o CEP estiver vazio, não faz a requisição
+    // Remove traços e espaços do CEP para garantir o formato correto
+    const cep = artesaoState.CEP?.replace(/\D/g, "");
+
+    if (!cep || cep.length !== 8) {
+      alert("Digite um CEP válido com 8 números.");
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -66,18 +113,17 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
       );
       const data = await response.json();
 
-      // Verifica se a resposta é válida
       if (!data.erro) {
-        setArtesao({
-          ...artesaoState,
+        setArtesaoState((prevState) => ({
+          ...prevState,
           estado: data.uf,
           cidade: data.localidade,
           rua: data.logradouro,
           bairro: data.bairro,
-        });
+        }));
       } else {
         alert("CEP não encontrado!");
-        setArtesao((prevState) => ({
+        setArtesaoState((prevState) => ({
           ...prevState,
           estado: "",
           cidade: "",
@@ -92,185 +138,99 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
     }
   };
 
-  const redimensionarImagem = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const img = new Image();
-      img.src = e.target.result;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        const MAX_WIDTH = 1000; // Diminuir a largura para um tamanho mais razoável
-        const MAX_HEIGHT = 1000; // Ajuste a altura de acordo
-        const MAX_SIZE = 1 * 1024 * 1024; // 1MB
-        let width = img.width;
-        let height = img.height;        
-        const fileSize = file.size;
-
-        if (fileSize > MAX_SIZE) {
-          alert("O arquivo é muito grande. Tente com uma imagem menor.");
-          return;
-        }
-        
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = (height * MAX_WIDTH) / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = (width * MAX_HEIGHT) / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx?.drawImage(img, 0, 0, width, height);
-        const imagemBase64 = canvas.toDataURL("image/jpeg", 0.8); // Comprimir um pouco a imagem
-        setImagemRedimensionada(imagemBase64);
-      };
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleFileChange = (file: File | null) => {
-    if (file) {
-      // // Verifique o tipo da imagem
-      const fileType = file.type;
-      if (fileType !== "image/jpeg" && fileType !== "image/png") {
-        alert(
-          "Formato de arquivo não suportado. Apenas JPEG e PNG são permitidos."
-        );
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("imagem", file);
-
-      // Enviar a imagem via API
-      fetch("/upload", {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => console.log("Imagem enviada com sucesso:", data))
-        .catch((error) => console.error("Erro ao enviar imagem:", error));
-
-      // Processa a nova imagem
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          const base64String = reader.result.split(",")[1];
-          setArtesao({ ...artesaoState, imagemPerfil: base64String });
-        }
-      };
-
-      redimensionarImagem(file);
-      reader.readAsDataURL(file);
-    } else if (!imagemRedimensionada) {
-      // Caso nenhum arquivo seja selecionado, mantenha a imagem existente
-      setArtesao({ ...artesaoState, imagemPerfil: artesao.imagemPerfil });
+  useEffect(() => {
+    if (artesaoState.imagem instanceof File) {
+      const url = URL.createObjectURL(artesaoState.imagem);
+      setImagemUrl(url); // Atualiza apenas a URL da imagem
+      return () => URL.revokeObjectURL(url); // Revoga a URL quando não for mais necessário
     }
-  };
-
-  // Função para atualizar o estado de artesão ao alterar qualquer campo
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { id, value, type, checked } = e.target as HTMLInputElement;
-
-    let newValue;
-
-    if (type === "checkbox") {
-      // Para checkbox, atribui o valor de "checked" (true ou false)
-      newValue = checked;
-    } else if (id === "telefone" || id === "whatsapp") {
-      // Remove tudo que não for número para os campos de telefone e whatsapp
-      newValue = value.replace(/\D/g, "");
-    } else {
-      newValue = value;
-    }
-
-    if (e.target instanceof HTMLTextAreaElement) {
-      // Lógica específica para textarea, por exemplo, limitar o número de caracteres
-      if (value.length > 255) {
-        // Mostrar uma mensagem de erro ou cortar o texto
-      }
-    }
-
-    setArtesao((prevState) => ({
-      ...prevState,
-      [id]: newValue,
-    }));
-  };
-
-  const handleChangeInput = (e: React.BaseSyntheticEvent) => {
-    const target = e.target as HTMLInputElement;
-
-    if (target && target.id && target.value) {
-      const { id, value } = target;
-      const newValue = value.replace(/\D/g, "");
-      setArtesao((prevState) => ({
-        ...prevState,
-        [id]: newValue,
-      }));
-      console.log(`ID: ${id}, Valor: ${newValue}`); // Exemplo de log
-    } else {
-      console.error("Evento inválido ou target não é um HTMLInputElement");
-    }
-  };
+  }, [artesaoState.imagem]);
 
   // Função de submit para cadastrar o artesão
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const formData = new FormData();
+
+    //console.log("Estado do artesão antes de enviar:", artesaoState);
+
+    // Verifica se a imagem foi definida e não é null ou undefined
+    if (artesaoState.imagem instanceof File) {
+      formData.append("imagem", artesaoState.imagem); // Adiciona a imagem ao FormData
+      //console.log("Imagem adicionada:", artesaoState.imagem);
+    } else {
+      console.error("Imagem não é um arquivo válido.");
+    }
+
+    // Adicionando outros campos do artesão
+    Object.entries(artesaoState).forEach(([key, value]) => {
+      //console.log(`Adicionando ${key}:`, value);
+      // Verifica se o valor é um arquivo (File) e adiciona ao FormData
+      if (value instanceof File) {
+        formData.append(key, value); // Adiciona o arquivo
+      } else if (Array.isArray(value)) {
+        // Se o valor for um array, você pode querer mapear ou lidar de outra maneira
+        value.forEach((item) => formData.append(key, item));
+      } else {
+        // Para qualquer outro tipo de dado, simplesmente adiciona como string ou número
+        formData.append(key, value);
+      }
+    });
 
     console.log(
-      "Tentando cadastrar Artesão:",
+      "Tentando cadastrar Artesão dados de: artesaoState:",
       JSON.stringify(artesaoState, null, 2)
-    );
+    );    
 
     try {
-      // Verificar se o artesão já existe com o ID informado
-      if (artesaoState.id) {
-        const artesaoExistente = await buscarArtesaoPorId(artesaoState.id);
+      //console.log("isEditing && artesaoState.id", isEditing, artesaoState.id);
+      if (isEditing && artesaoState.id) {        
+        await atualizaArtesao(artesaoState.id, formData); // Atualizar com FormData
+        alert("Cadastro atualizado com sucesso!");
+        navigate(`/ExibirArtesao/${artesaoState.id}`);
+        console.log(
+          "Artesão ATUALIZADO com sucesso. Dados retornados da API:",
+          JSON.stringify(artesaoState, null, 2)
+        );
+      } else {
+        artesaoState.id = crypto.randomUUID();
+        //artesaoState.usuarioId = usuarioId;
+        
+        await cadastrarArtesao(artesaoState); // Criar novo cadastro
 
-        if (artesaoExistente) {
-          // Se o ID já existe, faz a edição
-          const dadosEditados = await atualizaArtesao(
-            artesaoState.id,
-            artesaoState
-          );
-          console.log("Artesão editado com sucesso:", dadosEditados);
-
-          alert("Artesão editado com sucesso!");
-          navigate(`/ExibirArtesao/${artesaoState.id}`);
-          return;
-        }
+        alert("Cadastro criado com sucesso!");
+        // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
+        navigate(`/ExibirArtesao/${artesaoState.id}`);
+        console.log(
+          "Artesão CADASTRADO com sucesso. Dados retornados da API:",
+          JSON.stringify(artesao, null, 2)
+        );
       }
-
-      // Caso o ID não exista, faz o cadastro
-      const data = await cadastrarArtesao(artesaoState);
-
-      console.log(
-        "Usuário cadastrado com sucesso. Dados retornados da API:",
-        JSON.stringify(data, null, 2)
-      );
-
-      alert("Artesão cadastrado com sucesso!");
-      // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
-      navigate(`/ExibirArtesao/${artesaoState.id}`);
     } catch (error: any) {
       setErrorMessage(error.message);
-
-      console.log(
-        "Tamanho da string base64:",
-        artesaoState.imagemPerfil.length
-      );
+      alert("Erro ao salvar. Verifique os dados e tente novamente.");
+      console.error("Erro ao salvar artesão:", error);
+      //console.log("Tamanho da string base64:", artesao.imagem.length);
       console.error("Erro ao cadastrar Artesão:", error.message || error);
-      console.log(artesaoState);
+      console.log(artesao);
     }
+  };
+
+  const ValueComponent: FileInputProps["valueComponent"] = ({ value }) => {
+    if (value === null) {
+      return null;
+    }
+
+    if (Array.isArray(value)) {
+      return (
+        <Pill.Group>
+          {value.map((file, index) => (
+            <Pill key={index}>{file.name}</Pill>
+          ))}
+        </Pill.Group>
+      );
+    }
+
+    return <Pill>{value.name}</Pill>;
   };
 
   return (
@@ -279,28 +239,91 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
         <Center>
           <form onSubmit={handleSubmit}>
             <Fieldset legend="Informações do Artesão">
-              <Center>
+              {/* <Center>
                 <SimpleGrid cols={2}>
-                  <Avatar
-                    variant="default"
-                    radius="xl"
-                    size="xl"
-                    src={
-                      imagemRedimensionada
-                        ? imagemRedimensionada
-                        : artesaoState.imagemPerfil
-                    }
-                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {artesao.imagem && (
+                      <Avatar
+                        variant="default"
+                        radius="xl"
+                        size={100}
+                        src={URL.createObjectURL(artesao.imagem)}
+                        alt="Imagem do artesão"
+                        style={{
+                          objectFit: "cover", // Faz a imagem se ajustar sem distorção
+                          width: "100px", // Tamanho fixo
+                          height: "100px", // Tamanho fixo
+                          position: "relative", // Previne o deslocamento do Avatar
+                        }}
+                      />
+                    )}
+                  </div>
                   <FileInput
                     label="Foto de perfil"
-                    placeholder="Selecione sua foto."
-                    id="imagemPerfil"
-                    onChange={handleFileChange}
+                    placeholder="Selecione sua foto"
+                    id="imagem"
+                    onChange={(file) => handleFilesChange(file as File | null)}
+                    valueComponent={ValueComponent}
+                    multiple={false}
+                    accept="image/png,image/jpeg"
+                  />
+                </SimpleGrid>
+              </Center> */}
+
+              <Center>
+                <SimpleGrid cols={1} spacing="sm">
+                  {" "}
+                  {/* Layout em coluna para uma boa disposição */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {artesaoState.imagem && (
+                      <Avatar
+                        variant="default"
+                        radius="xl"
+                        size={100} // Tamanho fixo, mas você pode ajustar conforme a necessidade
+                        //src={URL.createObjectURL(artesao.imagem)}
+                        src={
+                          artesaoState.imagem instanceof File
+                            ? URL.createObjectURL(artesaoState.imagem)
+                            : Array.isArray(artesaoState.imagemUrl)
+                            ? artesaoState.imagemUrl[0] // Usa o primeiro valor se for um array
+                            : artesaoState.imagemUrl
+                        }
+                        alt="Imagem do artesão"
+                        style={{
+                          objectFit: "cover", // Faz a imagem se ajustar sem distorção
+                          width: "100px", // Largura fixa
+                          height: "100px", // Altura fixa
+                          position: "relative", // Previne o deslocamento do Avatar
+                          maxWidth: "100%", // Ajuste para que o avatar ocupe até 100% do espaço disponível
+                          maxHeight: "100%", // Previne esticar a imagem se for muito grande
+                        }}
+                      />
+                    )}
+                  </div>
+                  <FileInput
+                    label="Foto de perfil"
+                    placeholder="Selecione sua foto"
+                    id="imagem"
+                    onChange={(file) => handleFileChange(file as File | null)}
+                    valueComponent={ValueComponent}
                     multiple={false}
                     accept="image/png,image/jpeg"
                   />
                 </SimpleGrid>
               </Center>
+
               <SimpleGrid cols={2}>
                 <InputBase
                   w={350}
@@ -310,32 +333,30 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                   type="text"
                   id="nomeArtesao"
                   value={artesaoState.nomeArtesao}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e.target.value, "nomeArtesao")}
                   required
                 />
                 <InputBase
                   w={350}
                   radius="md"
                   label="Telefone:"
-                  placeholder="(99) 9 9999-9999"
                   id="telefone"
-                  value={artesaoState.telefone}
-                  onChange={handleChangeInput}
-                  component={IMaskInput}
-                  mask="(00) 0 0000-0000"
-                  type="text"
+                  value={artesaoState.telefone || ""}
+                  placeholder="(99) 9 9999-9999"
+                  onChange={handleInputChange}
+                  maxLength={15}
+                  //mask="(99) 99999-9999"
                 />
                 <InputBase
                   w={300}
                   radius="md"
                   label="Whats App:"
-                  placeholder="(99) 9 9999-9999"
                   id="whatsApp"
-                  component={IMaskInput}
-                  value={artesaoState.whatsApp}
-                  onChange={handleChangeInput}
-                  mask="(00) 0 0000-0000"
-                  type="text"
+                  value={artesaoState.whatsApp || ""}
+                  placeholder="(99) 9 9999-9999"
+                  onChange={handleInputChange}
+                  maxLength={15}
+                  //mask="(99) 99999-9999"
                 />
               </SimpleGrid>
               <Textarea
@@ -344,8 +365,11 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                 resize="vertical"
                 placeholder="Descreva sobre a sua marca. min 500 caracteres"
                 id="descricaoPerfil"
-                value={artesaoState.descricaoPerfil}
-                onChange={handleChange}
+                value={artesaoState.descricaoPerfil || ""}
+                onChange={(e) =>
+                  handleChange(e.target.value, "descricaoPerfil")
+                }
+                required
               />
               <Fieldset legend="Informações sobre encomendas">
                 <SimpleGrid cols={2} spacing="sm">
@@ -354,14 +378,18 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                     id="receberEncomendas"
                     label="Aceito receber encomendas."
                     checked={artesaoState.receberEncomendas}
-                    onChange={handleChange}
+                    onChange={(e) =>
+                      handleChange(e.target.checked, "receberEncomendas")
+                    }
                   />
                   <Checkbox
                     p="md"
                     id="enviaEncomendas"
                     label="Aceita enviar encomendas."
                     checked={artesaoState.enviaEncomendas}
-                    onChange={handleChange}
+                    onChange={(e) =>
+                      handleChange(e.target.checked, "enviaEncomendas")
+                    }
                   />
                 </SimpleGrid>
               </Fieldset>
@@ -369,58 +397,65 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                 <SimpleGrid cols={3} spacing="">
                   <TextInput
                     w={110}
+                    required
                     radius="md"
                     label="CEP:"
                     placeholder="00000-000"
                     type="text"
                     id="CEP"
-                    value={artesaoState.CEP ? String(artesaoState.CEP) : ""}
-                    onChange={handleChange}
+                    value={artesaoState.CEP || ""}
+                    onChange={(e) =>
+                      setArtesaoState({ ...artesaoState, CEP: e.target.value })
+                    }
                     onBlur={buscarCep} // Chama a função ao perder o foco
                   />
                   <TextInput
                     ml="-101px"
                     w={200}
+                    required
                     radius="md"
                     label="Estado:"
                     placeholder="Selecione"
                     type="text"
                     id="estado"
-                    value={artesaoState.estado}
-                    onChange={handleChange}
+                    value={artesaoState.estado || ""}
+                    onChange={(e) => handleChange(e.target.value, "estado")}
                   />
                   <TextInput
                     ml="-130px"
                     w={150}
+                    required
                     radius="md"
                     label="Cidade:"
                     placeholder="Selecione"
                     type="text"
                     id="cidade"
-                    value={artesaoState.cidade}
-                    onChange={handleChange}
+                    value={artesaoState.cidade || ""}
+                    onChange={(e) => handleChange(e.target.value, "cidade")}
                   />
                 </SimpleGrid>
                 <SimpleGrid cols={5} spacing="xs">
                   <TextInput
                     w={150}
+                    required
                     radius="md"
                     label="Rua:"
                     placeholder="Rua lorem ipsum"
                     type="text"
                     id="rua"
-                    value={artesaoState.rua}
-                    onChange={handleChange}
+                    value={artesaoState.rua || ""}
+                    onChange={(e) => handleChange(e.target.value, "rua")}
                   />
                   <TextInput
                     w={150}
                     radius="md"
+                    required
                     label="Bairro:"
                     placeholder="Bairro exemplo x"
                     type="text"
                     id="bairro"
-                    value={artesaoState.bairro}
-                    onChange={handleChange}
+                    value={artesaoState.bairro || ""}
+                    onChange={(e) => handleChange(e.target.value, "bairro")}
                   />
                   <TextInput
                     w={150}
@@ -429,8 +464,10 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                     placeholder="Apto x ou "
                     type="text"
                     id="complemento"
-                    value={artesaoState.complemento}
-                    onChange={handleChange}
+                    value={artesaoState.complemento || ""}
+                    onChange={(e) =>
+                      handleChange(e.target.value, "complemento")
+                    }
                   />
                   <TextInput
                     w={70}
@@ -439,8 +476,8 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                     placeholder="0000"
                     type="text"
                     id="numero"
-                    value={artesaoState.numero}
-                    onChange={handleChange}
+                    value={artesaoState.numero || ""}
+                    onChange={(e) => handleChange(e.target.value, "numero")}
                   />
                   <Checkbox
                     p="xl"
@@ -448,7 +485,7 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
                     label="Sem N°"
                     id="semNumero"
                     checked={artesaoState.semNumero}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.value, "semNumero")}
                   />
                 </SimpleGrid>
               </Fieldset>
@@ -464,3 +501,14 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao, onSubmit }) => {
 };
 
 export default ArtesaoForm;
+
+const mascaraTelefone = (value: string): string => {
+  // Remove qualquer caractere não numérico
+  const cleaned = value.replace(/\D/g, "");
+
+  // Aplica a máscara com base no tamanho do número
+  if (cleaned.length <= 10) {
+    return cleaned.replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
+  }
+  return cleaned.replace(/^(\d{2})(\d{5})(\d{0,4})$/, "($1) $2-$3");
+};

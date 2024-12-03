@@ -4,22 +4,27 @@ import { UsuarioModel } from "../models/UsuarioModel";
 import { LoginModel } from './../models/LoginModel';
 import axios from "axios";
 
-
 const apiRequest = async <T>(url: string, data?: any, method: string = "POST"): Promise<T> => {
   try {
-    const headers: any = {
-      "Content-Type": "application/json",
-    };
+    const headers: any = {};
+
     // Verifica se a data inclui FormData (ou seja, se está lidando com arquivos)
     if (data instanceof FormData) {
-      delete headers["Content-Type"]; // Não defina o Content-Type explicitamente para FormData
+      // Não defina o Content-Type explicitamente para FormData
+      // O navegador vai fazer isso automaticamente com o tipo correto.
+      delete headers["Content-Type"]; // Garante que o Content-Type seja removido
+    } else {
+      headers["Content-Type"] = "application/json"; // Define para JSON se não for FormData
     }
+
+    // Fazendo a requisição com Axios
     const response = await axios({
       method,
       url: `https://localhost:7215/api/${url}`, // Substitua pela URL correta
       data,
       headers
     });
+
     return response.data; // Retorna apenas os dados da resposta
   } catch (error: any) {
     // Extrai informações detalhadas do erro
@@ -37,14 +42,14 @@ const apiRequest = async <T>(url: string, data?: any, method: string = "POST"): 
   }
 };
 
-
-// Função de Login do usuário
+//#region ------------------------------------------------ LOGIN USUÁRIO ------------------------------------------------//
 export const loginUsuario = async (login: LoginModel): Promise<LoginModel> => {
   const response = await apiRequest<LoginModel>("Authentication/login", login);
-  return response; // O TypeScript sabe que `response` é do tipo `LoginModel`
+  return response;
 };
+//#endregion
 
-//#region ------------------------------------------------ USUÁRIOS  -------------------------------------------------//
+//#region ------------------------------------------------ USUÁRIOS -------------------------------------------------//
 // Função de cadastro do usuário
 export const cadastrarUsuario = async (usuario: UsuarioModel) => {
   console.log("Usuário enviado para a API:", JSON.stringify(usuario, null, 2));
@@ -60,7 +65,7 @@ export const listarUsuarios = async (): Promise<UsuarioModel[]> => {
 };
 //#endregion "My Region"
 
-//#region ----------------------------------------------- ARTESÃOS  -------------------------------------------------// 
+//#region ------------------------------------------------ ARTESÃOS -------------------------------------------------// 
 // LISTAR ARTESÃOS   - GET
 export const listarArtesaos = async (): Promise<ArtesaoModel[]> => {
   // Passa o tipo de resposta como um array de UsuarioModel
@@ -70,26 +75,57 @@ export const listarArtesaos = async (): Promise<ArtesaoModel[]> => {
 };
 // CADASTRAR ARTESÃO - POST
 export const cadastrarArtesao = async (artesao: ArtesaoModel) => {
-  return apiRequest("artesao", artesao);
+  console.log("Artesão enviado para a API:", JSON.stringify(artesao, null, 2));
+  const formData = new FormData();
+
+  // Adicionando os dados ao FormData
+  Object.entries(artesao).forEach(([key, value]) => {
+    if (value instanceof File) {
+      formData.append(key, value); // Se for um arquivo (File)
+    } else if (Array.isArray(value)) {
+      // Adiciona arrays no formato key[index]
+      value.forEach((item, index) => {
+        if (item !== undefined && item !== null) {
+          formData.append(`${key}[${index}]`, item.toString());
+        }
+      });
+    } else if (value !== undefined && value !== null) {
+      formData.append(key, value.toString()); // Adiciona outros tipos como string
+    }
+  });
+
+  // Loga o conteúdo do FormData para depuração
+  //console.log("FormData enviado:");
+  // formData.forEach((value, key) => {
+  //   console.log(`${key}:`, value);
+  // });
+
+  // Chama a função apiRequest com o FormData
+  return await apiRequest<FormData>("artesao", formData, "POST");
 };
 //ATUALIZAR ARTESÃO  - PUT
-export const atualizaArtesao = async (id: string, artesaoAtualizado: Partial<ArtesaoModel>): Promise<ArtesaoModel> => {
+export const atualizaArtesao = async (id: string, artesaoAtualizado: FormData): Promise<ArtesaoModel> => {
   if (!id) {
     throw new Error("O ID do artesão é inválido.");
   }
 
-  if (!artesaoAtualizado || Object.keys(artesaoAtualizado).length === 0) {
-    throw new Error("Os dados para atualização são inválidos.");
-  }
+  // if (!artesaoAtualizado || Object.keys(artesaoAtualizado).length === 0) {
+  //   throw new Error("Os dados para atualização são inválidos.");
+  // }
 
   try {
+    // Faz a requisição para atualizar o artesão
+    console.log("Artesão enviado para a API:", JSON.stringify(artesaoAtualizado, null, 2));
     const artesao = await apiRequest<ArtesaoModel>(`artesao/${id}`, artesaoAtualizado, "PUT");
+
     console.log("Artesão atualizado:", JSON.stringify(artesao, null, 2));
     return artesao;
   } catch (error) {
     console.error("Erro ao atualizar o artesão:", error);
     throw new Error("Erro ao atualizar o artesão. Tente novamente mais tarde.");
   }
+
+
 };
 //EXCLUIR ARTESÃO    - DELETE
 export const deleteArtesao = async (id: string): Promise<void> => {
@@ -135,10 +171,9 @@ export const buscarArtesaoPorNome = async (nome: string): Promise<ArtesaoModel |
     throw new Error("Erro ao buscar artesão. Tente novamente mais tarde.");
   }
 };
-
 //#endregion
 
-//#region ----------------------------------------------- ARTESANATOS  -------------------------------------------------// 
+//#region ------------------------------------------------ ARTESANATOS -------------------------------------------------//
 export const listarArtesanatos = async (): Promise<ArtesanatoModel[]> => {
   // Passa o tipo de resposta como um array de ArtesanatoModel
   const artesanatos = await apiRequest<ArtesanatoModel[]>("artesanato", null, "GET");
@@ -164,48 +199,3 @@ export const BuscarArtesanatoPorId = async (id: string): Promise<ArtesanatoModel
   }
 };
 //#endregion
-
-
-// Função assíncrona para buscar a URL da imagem
-export const buscarUrlDaImagemArtesao = async (id: string): Promise<string | null> => {
-
-  try {
-    const data = await apiRequest<{ imagemBase64: string; mimeType: string }>(
-      `artesao/ObterImagemArtesao?id=${id}`,
-      undefined,
-      "GET"
-    );
-
-    if (data?.imagemBase64 && data.mimeType) {
-      return `data:${data.mimeType};base64,${data.imagemBase64}`;
-    } else {
-      console.error("Imagem ou tipo MIME não encontrado na resposta da API.");
-      return null;
-    }
-  } catch (error) {
-    console.error("Erro ao buscar a imagem do artesão:", error);
-    return null;
-  }
-};
-
-// Função assíncrona para buscar a URL da imagem
-export const buscarUrlDaImagemArtesanato = async (id: string): Promise<string | null> => {
-
-  try {
-    const data = await apiRequest<{ imagemBase64: string; mimeType: string }>(
-      `artesanato/ObterImagemArtesanato?id=${id}`,
-      undefined,
-      "GET"
-    );
-
-    if (data?.imagemBase64 && data.mimeType) {
-      return `data:${data.mimeType};base64,${data.imagemBase64}`;
-    } else {
-      console.error("Imagem ou tipo MIME não encontrado na resposta da API.");
-      return null;
-    }
-  } catch (error) {
-    console.error("Erro ao buscar a imagem do artesão:", error);
-    return null;
-  }
-};

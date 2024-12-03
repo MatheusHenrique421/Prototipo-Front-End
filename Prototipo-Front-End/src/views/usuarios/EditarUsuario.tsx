@@ -230,7 +230,7 @@ export default function EditarUsuario() {
           <Radio
             p="sm"
             id="receberEmail"
-            label="Quero receber novidades no e-mail."
+            label="Quero ser um arteão."
             value={String(editingUsuario?.receberEmail || false)}
             checked={!!editingUsuario?.receberEmail}
             onChange={(e) =>

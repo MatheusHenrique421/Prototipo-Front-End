@@ -1,12 +1,12 @@
 export interface ArtesaoModel {
     id: string;
     usuarioId: string;
-    imagemPerfil: string;
-    fotoUrl: string;
+    imagemUrl: string[];
+    imagem: File | null;
     nomeArtesao: string;
     descricaoPerfil: string;
     telefone: string;
-    whatsApp: string;    
+    whatsApp: string;
     receberEncomendas: boolean;
     enviaEncomendas: boolean;
     CEP: string;
@@ -17,4 +17,10 @@ export interface ArtesaoModel {
     complemento: string;
     numero: string;
     semNumero: boolean;
+    dataCadastro: Date;
+}
+
+export interface ArtesaoFormProps {
+    artesao: ArtesaoModel;
+    onSubmit: (artesaoAtualizado: ArtesaoModel) => void;
 }

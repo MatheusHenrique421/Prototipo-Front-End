@@ -1,4 +1,4 @@
-import { Container, Group, Loader, SimpleGrid, Text } from "@mantine/core";
+import { Container, Loader, SimpleGrid, Text } from "@mantine/core";
 import { ArtesaoModel } from "./../../models/ArtesaoModel";
 import { useEffect, useState } from "react";
 import CardArtesao from "./CardArtesao";
@@ -40,10 +40,10 @@ export default function ListarArtesaos() {
         ) : error ? (
           <Text c="red">{error}</Text>
         ) : (
-          <SimpleGrid cols={2}>            
-              {artesaos.map((artesao) => (
-                <CardArtesao key={artesao.id} artesao={artesao} />
-              ))}            
+          <SimpleGrid cols={2}>
+            {artesaos.map((artesao) => (
+              <CardArtesao key={artesao.id} artesao={artesao} />
+            ))}
           </SimpleGrid>
         )}
       </Container>

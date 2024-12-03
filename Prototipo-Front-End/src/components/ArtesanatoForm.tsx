@@ -29,7 +29,8 @@ const ArtesanatoForm: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   //const idCorreto = id && id.startsWith("id=") ? id.split("=")[1] : id;
   const artesaoIdFromParams = id?.startsWith("id=") ? id.split("=")[1] : id;
-  const artesaoId = artesaoIdFromParams || localStorage.getItem("artesaoId") || "";
+  const artesaoId =
+    artesaoIdFromParams || localStorage.getItem("artesaoId") || "";
   const artesanatoId = crypto.randomUUID();
   const [artesanato, setArtesanato] = useState<ArtesanatoModel>({
     id: artesanatoId || crypto.randomUUID(),
@@ -48,7 +49,7 @@ const ArtesanatoForm: React.FC = () => {
     comprimentoArtesanato: 0,
     pesoArtesanato: 0,
     dataCriacao: new Date(),
-    tempoCriacaoHr: getHoraAtual(), // Hora e minutos atuais no formato HH:mm    
+    tempoCriacaoHr: getHoraAtual(), // Hora e minutos atuais no formato HH:mm
   });
 
   const compressImage = (
@@ -135,7 +136,10 @@ const ArtesanatoForm: React.FC = () => {
     }
   };
 
-  const handleChange = (value: string | boolean | string[] | number, id: string) => {
+  const handleChange = (
+    value: string | boolean | string[] | number,
+    id: string
+  ) => {
     setArtesanato((prevState) => ({
       ...prevState,
       [id]: value,
@@ -165,13 +169,15 @@ const ArtesanatoForm: React.FC = () => {
     const formData = new FormData();
 
     // Formatação da data
-    const dataFormatada = artesanato.dataCriacao ? artesanato.dataCriacao.toISOString() : null;
-    
+    const dataFormatada = artesanato.dataCriacao
+      ? artesanato.dataCriacao.toISOString()
+      : null;
+
     // Adiciona a dataCriacao ao FormData, caso tenha um valor
     if (dataFormatada) {
       formData.append("dataCriacao", dataFormatada);
     }
-    
+
     // Itera sobre as propriedades do objeto artesanato
     Object.entries(artesanato).forEach(([key, value]) => {
       // Verifica se o valor é um arquivo (File) e adiciona ao FormData
@@ -198,6 +204,10 @@ const ArtesanatoForm: React.FC = () => {
       JSON.stringify(artesanato, null, 2)
     );
     try {
+      console.log(
+        "TENTANDO ENVIAR O FORM DATA:" ,
+        JSON.stringify(formData, null, 2)
+      );
       const data = await cadastrarArtesanato(formData);
 
       console.log(
@@ -341,7 +351,7 @@ const ArtesanatoForm: React.FC = () => {
                   type="text"
                   id="tempoCriacaoHr"
                   onChange={(value) => handleChange(value, "tempoCriacaoHr")}
-                  decimalScale={2}                  
+                  decimalScale={2}
                 />
               </SimpleGrid>
               <Divider label="Caracteristicas do artesanato" mt="sm" />

@@ -75,7 +75,11 @@ export const listarArtesaos = async (): Promise<ArtesaoModel[]> => {
 };
 // CADASTRAR ARTESÃO - POST
 export const cadastrarArtesao = async (artesao: ArtesaoModel) => {
+<<<<<<< HEAD
   console.log("Artesão enviado para a API:", JSON.stringify(artesao, null, 2));
+=======
+  //return apiRequest("artesao", artesao);//
+>>>>>>> 32dd6291d548ba75070f41e96d7e3c981758f071
   const formData = new FormData();
 
   // Adicionando os dados ao FormData
@@ -83,23 +87,30 @@ export const cadastrarArtesao = async (artesao: ArtesaoModel) => {
     if (value instanceof File) {
       formData.append(key, value); // Se for um arquivo (File)
     } else if (Array.isArray(value)) {
+<<<<<<< HEAD
       // Adiciona arrays no formato key[index]
       value.forEach((item, index) => {
         if (item !== undefined && item !== null) {
           formData.append(`${key}[${index}]`, item.toString());
         }
       });
+=======
+      value.forEach((item, index) => formData.append(`${key}[${index}]`, item)); // Adiciona arrays
+>>>>>>> 32dd6291d548ba75070f41e96d7e3c981758f071
     } else if (value !== undefined && value !== null) {
       formData.append(key, value.toString()); // Adiciona outros tipos como string
     }
   });
 
+<<<<<<< HEAD
   // Loga o conteúdo do FormData para depuração
   //console.log("FormData enviado:");
   // formData.forEach((value, key) => {
   //   console.log(`${key}:`, value);
   // });
 
+=======
+>>>>>>> 32dd6291d548ba75070f41e96d7e3c981758f071
   // Chama a função apiRequest com o FormData
   return await apiRequest<FormData>("artesao", formData, "POST");
 };
@@ -115,7 +126,10 @@ export const atualizaArtesao = async (id: string, artesaoAtualizado: FormData): 
 
   try {
     // Faz a requisição para atualizar o artesão
+<<<<<<< HEAD
     console.log("Artesão enviado para a API:", JSON.stringify(artesaoAtualizado, null, 2));
+=======
+>>>>>>> 32dd6291d548ba75070f41e96d7e3c981758f071
     const artesao = await apiRequest<ArtesaoModel>(`artesao/${id}`, artesaoAtualizado, "PUT");
 
     console.log("Artesão atualizado:", JSON.stringify(artesao, null, 2));

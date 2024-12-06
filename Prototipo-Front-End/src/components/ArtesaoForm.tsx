@@ -1,7 +1,12 @@
 import { ArtesaoFormProps, ArtesaoModel } from "../models/ArtesaoModel";
-import { atualizaArtesao, cadastrarArtesao } from "../services/Api";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+
+import {
+  atualizaArtesao,
+  cadastrarArtesao,
+} from "../services/Api";
+
 import {
   Container,
   Center,
@@ -19,10 +24,13 @@ import {
 } from "@mantine/core";
 
 const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
-  const { id: usuarioId } = useParams<{ id: string }>(); // Captura o ID da rota // Captura o ID da rota
   const [, setImagemUrl] = useState<string | null>(null);
+  const usuarioId = localStorage.getItem("usuarioId");
   const [, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();    
+
+  useParams<{ id: string; }>(); // Captura o ID da rota
+  //const isEditing = !!id; // Define se está em modo de edição
 
   const [artesaoState, setArtesaoState] = useState<ArtesaoModel>({
     ...artesao,
@@ -45,17 +53,18 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
     numero: artesao.numero || "",
     semNumero: artesao.semNumero || false,
   });
-
-  const isEditing = !!artesao.id; // Define se está em modo de edição  
+  const isEditing = artesao.id; // Define se está em modo de edição
 
   const handleFileChange = (file: File | null) => {
     setArtesaoState((prevState) => ({ ...prevState, imagem: file }));
   };
 
   // Função para redimensionar a imagem
-  const handleChange = (value: string | boolean | string[] | number | File | null, 
+
+  const handleChange = (
+    value: string | boolean | string[] | number | File | null,
     id: keyof ArtesaoModel // 'keyof' garante que 'id' seja uma chave válida
-      ) => {
+  ) => {
     setArtesaoState((prevState) => ({
       ...prevState,
       [id]: value,
@@ -151,19 +160,20 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
     event.preventDefault();
     const formData = new FormData();
 
-    //console.log("Estado do artesão antes de enviar:", artesaoState);
+  
+    console.log("Estado do artesão antes de enviar:", artesaoState);
 
     // Verifica se a imagem foi definida e não é null ou undefined
     if (artesaoState.imagem instanceof File) {
       formData.append("imagem", artesaoState.imagem); // Adiciona a imagem ao FormData
-      //console.log("Imagem adicionada:", artesaoState.imagem);
+      console.log("Imagem adicionada:", artesaoState.imagem);
     } else {
       console.error("Imagem não é um arquivo válido.");
     }
 
     // Adicionando outros campos do artesão
     Object.entries(artesaoState).forEach(([key, value]) => {
-      //console.log(`Adicionando ${key}:`, value);
+      console.log(`Adicionando ${key}:`, value);      
       // Verifica se o valor é um arquivo (File) e adiciona ao FormData
       if (value instanceof File) {
         formData.append(key, value); // Adiciona o arquivo
@@ -181,27 +191,37 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
       JSON.stringify(artesaoState, null, 2)
     );    
 
+    if (isEditing) {
+      await atualizaArtesao(artesaoState.id, formData);
+    } else {
+      await cadastrarArtesao(artesao);
+    }
+
     try {
-      //console.log("isEditing && artesaoState.id", isEditing, artesaoState.id);
-      if (isEditing && artesaoState.id) {        
+      console.log("isEditing && artesaoState.id", isEditing, artesaoState.id);
+      if (isEditing) {
+        console.log(
+          "TENTANDO ENVIAR O FORM DATA:",
+          JSON.stringify(formData, null, 2)
+        );
         await atualizaArtesao(artesaoState.id, formData); // Atualizar com FormData
         alert("Cadastro atualizado com sucesso!");
         navigate(`/ExibirArtesao/${artesaoState.id}`);
         console.log(
-          "Artesão ATUALIZADO com sucesso. Dados retornados da API:",
+          "Usuário ATUALIZADO com sucesso. Dados retornados da API:",
           JSON.stringify(artesaoState, null, 2)
         );
       } else {
-        artesaoState.id = crypto.randomUUID();
-        //artesaoState.usuarioId = usuarioId;
-        
-        await cadastrarArtesao(artesaoState); // Criar novo cadastro
-
+        await cadastrarArtesao(artesao); // Criar novo cadastro
         alert("Cadastro criado com sucesso!");
         // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
         navigate(`/ExibirArtesao/${artesaoState.id}`);
+        // console.log(
+        //   "Usuário cadastrado com sucesso. Dados retornados da API:",
+        //   JSON.stringify(artesao, null, 2)
+        // );
         console.log(
-          "Artesão CADASTRADO com sucesso. Dados retornados da API:",
+          "Usuário CADASTRADO com sucesso. Dados retornados da API:",
           JSON.stringify(artesao, null, 2)
         );
       }

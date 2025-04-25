@@ -11,258 +11,146 @@ import {
   NumberFormatter,
   Avatar,
   Stack,
+  Title,
+  Divider,
 } from "@mantine/core";
+import ListarArtesanatos from "../artesanatos/ListarArtesanatos";
 
 export function Home() {
   return (
-    <section>
-      <Container>
-        <h1>Tela Home</h1>
-        <Card shadow="sm" padding="md" radius="md" withBorder mt="lg">
-          <Card.Section component="a" href="https://mantine.dev/">
-            <Image
-              src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-              height={160}
-              alt="Norway"
-            />
-          </Card.Section>
-
-          <Flex justify="center" align="center">
-            <Group
-              align="center"
-              justify="space-between"
-              mt="md"
-              mb="xs"
-              gap="md"
-            >
-              <Text fw={500}>Seja Bem Vindo!</Text>
-            </Group>
-          </Flex>
-
-          <Text size="lg" c="dimmed" style={{ textAlign: "center" }}>
-            Descubra artistas e incriveis artesanatos feitos à mão, conheça todo
-            o processo e muito mais.
-          </Text>
-
-          <Button color="blue" fullWidth mt="md" radius="md">
-            Book classic tour now
-          </Button>
-        </Card>
-      </Container>
-
-      <section>
-        <Container>
-          <SimpleGrid mt="lg" mb="lg" cols={2}>
+    <section style={{ backgroundColor: "#f8f9fa" }}>
+      <Container size="lg" pt={60} pb={40}>
+        {/* Hero Section */}
+        <Card shadow="lg" padding="xl" radius="lg" withBorder style={{ background: "white" }}>
+          <SimpleGrid cols={2} spacing="lg">
             <div>
-              <Text size="xl" fw={700} mt="md" mb="md">
-                Artesanatos em Destaque
+              <Title order={1} style={{ fontSize: 40, color: "#1C1C1E" }}>
+                Bem-vindo à Galeria Artesanal
+              </Title>
+              <Text size="lg" c="dimmed" mt="md">
+                Uma curadoria de talentos, cores e histórias. Descubra o feito à mão com alma.
               </Text>
-              <Text size="md" c="dimmed" style={{ textAlign: "left" }}>
-                Descubra artistas e incriveis artesanatos feitos à mão, conheça
-                todo o processo e muito mais.
-              </Text>
-              <Button color="blue" mt="md" radius="md">
-                Conheça-os
+              <Button color="grape" radius="xl" size="lg" mt="xl">
+                Comece a explorar
               </Button>
             </div>
-            <div>
-              <Card
-                shadow="sm"
-                padding="xl"
-                component="a"
-                mt="md"
-                href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                target="_blank"
-              >
-                <Card.Section>
-                  <Image
-                    src="https://images.unsplash.com/photo-1579227114347-15d08fc37cae?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2550&q=80"
-                    h={160}
-                    alt="No way!"
-                  />
-                </Card.Section>
-              </Card>
-            </div>
+            <Image
+              radius="md"
+               src="https://images.unsplash.com/photo-1579227114347-15d08fc37cae?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2550&q=80"
+              alt="Hero"
+            />           
           </SimpleGrid>
-          {/* //criar o for para este SimpleGrid */}
-          <div>
-            <SimpleGrid mt="lg" mb="lg" cols={3}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Card.Section>
-                  <Image
-                    src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-                    height={160}
-                    alt="Norway"
-                  />
-                </Card.Section>
+        </Card>
 
-                <Group justify="space-between" mt="lg" mb="lg">
-                  <Badge color="orange">On Sale</Badge>
-                </Group>
-                <Text fw={500}>Descricao trab</Text>
-                <NumberFormatter
-                  prefix="R$:"
-                  value={10}
-                  decimalSeparator={","}
-                  fixedDecimalScale={true}
-                  decimalScale={2}
-                />
-              </Card>
-            </SimpleGrid>
-          </div>
-          <hr />
-        </Container>
-      </section>
-      <section>
-        <Container>
-          <SimpleGrid mt="lg" mb="lg" cols={2}>
-            <div>
-              <Card
-                shadow="sm"
-                padding="xl"
-                component="a"
-                mt="md"
-                href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                target="_blank"
-              >
-                <Card.Section>
-                  <Image
-                    radius="md"
-                    src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png"
-                  />
-                </Card.Section>
-              </Card>
-            </div>
-            <div>
-              <Text
-                size="xl"
-                fw={700}
-                mt="md"
-                mb="md"
-                style={{ textAlign: "center" }}
-              >
-                Categorias de Artesanatos
-              </Text>
-              <Text size="md" c="dimmed" style={{ textAlign: "center" }}>
-                Descubra artistas e incriveis artesanatos feitos à mão, conheça
-                todo o processo e muito mais.
-              </Text>
-              <Flex justify="center">
-                <Button color="blue" mt="md" radius="md">
-                  Explore
-                </Button>
-              </Flex>
-              <Flex
-                gap="xl"
-                justify="flex-start"
-                align="flex-start"
-                direction="row"
-                wrap="wrap"
-              >
-                <SimpleGrid mt="lg" mb="lg" cols={3}>
-                  <Group>
-                    <Avatar
-                      component="a"
-                      href="https://github.com/rtivital"
-                      target="_blank"
-                      src="avatar.png"
-                      alt="it's me"
-                      size="xl"
-                    />
-                    <Text>asdkpasokd</Text>
-                  </Group>
-                  <Avatar
-                    component="a"
-                    href="https://github.com/rtivital"
-                    target="_blank"
-                    src="avatar.png"
-                    alt="it's me"
-                    size="xl"
-                  />
-                  <Avatar
-                    component="a"
-                    href="https://github.com/rtivital"
-                    target="_blank"
-                    src="avatar.png"
-                    alt="it's me"
-                    size="xl"
-                  />
-                </SimpleGrid>
-              </Flex>
-            </div>
-          </SimpleGrid>
-          <hr />
-        </Container>
-      </section>
-      <section>
-        <Container>
-          <Flex justify="center" align="center">
-            <Group
-              align="center"
-              justify="space-between"
-              mt="md"
-              mb="xs"
-              gap="md"
-            >
-              <Text size="xl" fw={700}>
-                Comunidade do Artesaato
-              </Text>
-            </Group>
-          </Flex>
-          <Text size="md" c="dimmed" style={{ textAlign: "center" }}>
-            Descubra artistas e incriveis artesanatos feitos à mão, conheça todo
-            o processo e muito mais.
-          </Text>
-
-          {/* criar o for para a publicação */}
-          <SimpleGrid mt="lg" mb="lg" p="xl" cols={1}>
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Group>
-                <Avatar
-                  component="a"
-                  href="https://github.com/rtivital"
-                  target="_blank"
-                  src="avatar.png"
-                  alt="it's me"
-                  size="sm"
-                />
-                <Stack mb="sm">
-                  <Text mt={0}>Nome do Artista</Text>
-                  <Text size="sm" mt={0} c="dimmed">
-                    Hrs atras - Nome da Loja{" "}
-                  </Text>
-                </Stack>
-              </Group>
+        {/* Destaques */}
+        <Title order={2} mt={80} mb={30} style={{ textAlign: "center", fontSize: 28 }}>
+          Destaques da Semana
+        </Title>
+          <ListarArtesanatos/>
+        {/* <SimpleGrid cols={3} spacing="lg">
+          {[1, 2, 3].map((item) => (
+            <Card key={item} shadow="sm" padding="md" radius="md" withBorder>
               <Card.Section>
                 <Image
                   src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-                  height={200}
-                  alt="Norway"
+                  height={160}
+                  alt="Destaque"
                 />
               </Card.Section>
-
-              <Group justify="space-between" mt="lg" mb="lg">
-                <Badge color="orange">Categorias do artesanato</Badge>
+              <Group justify="space-between" mt="lg" mb="sm">
+                <Badge color="grape">Exclusivo</Badge>
+                <Text size="sm" fw={700}>
+                  Artesão(a) Talento
+                </Text>
               </Group>
-              <Text c="dimmed">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Reiciendis earum nesciunt dolore ullam quae. Saepe similique
-                omnis, quo optio quod nostrum voluptatum ex rem fugiat, itaque
-                consequuntur iusto facilis sequi?
+              <Text c="dimmed" size="sm">
+                Um trabalho delicado com materiais sustentáveis e técnicas ancestrais.
               </Text>
-              <b>
+              <Text mt="md" fw={600}>
                 <NumberFormatter
-                  prefix="R$:"
-                  value={10}
-                  decimalSeparator={","}
-                  fixedDecimalScale={true}
+                  prefix="R$ "
+                  value={125}
+                  decimalSeparator=","
                   decimalScale={2}
                 />
-              </b>
+              </Text>
             </Card>
-          </SimpleGrid>
-        </Container>
-      </section>
+          ))}
+        </SimpleGrid> */}
+
+        {/* Categorias */}
+        <Title order={2} mt={80} mb={30} style={{ textAlign: "center", fontSize: 28 }}>
+          Categorias em Destaque
+        </Title>
+        <SimpleGrid cols={6} spacing="lg">
+          {["Cerâmica", "Têxtil", "Madeira", "Reciclado"].map((categoria) => (
+            <Card key={categoria} padding="lg" radius="md" shadow="md" withBorder>
+              <Group p="center">
+                <Avatar size="lg" radius="xl" src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png" />
+              </Group>
+              <Text ta="center" mt="sm" fw={700}>
+                {categoria}
+              </Text>
+            </Card>
+          ))}
+        </SimpleGrid>
+
+        {/* Publicações da Comunidade */}
+        <Title order={2} mt={80} mb={30} style={{ textAlign: "center", fontSize: 28 }}>
+          Da Comunidade Artesanal
+        </Title>
+        <SimpleGrid cols={2} spacing="lg">
+          {[1, 2].map((publi) => (
+            <Card key={publi} shadow="sm" padding="lg" radius="md" withBorder>
+              <Group>
+                <Avatar src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png" size="sm" />
+                <Stack gap={0}>
+                  <Text fw={700}>Artesã Bruna</Text>
+                  <Text size="xs" c="dimmed">
+                    2h atrás - @arte_natural
+                  </Text>
+                </Stack>
+              </Group>
+              <Card.Section mt="sm">
+                <Image
+                  height={180}
+                  src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
+                  alt="Publicação"
+                />
+              </Card.Section>
+              <Text mt="sm" size="sm" c="dimmed">
+                Uma nova coleção de mandalas pintadas à mão, inspiradas na natureza e espiritualidade.
+              </Text>
+              <Group mt="md" justify="space-between">
+                <Badge color="teal">Pintura</Badge>
+                <Text fw={600}>
+                  <NumberFormatter
+                    prefix="R$ "
+                    value={85}
+                    decimalSeparator=","
+                    decimalScale={2}
+                  />
+                </Text>
+              </Group>
+            </Card>
+          ))}
+        </SimpleGrid>
+
+        <Divider my={60} />
+
+        {/* CTA Final */}
+        <Flex justify="center" direction="column" align="center" gap="md">
+          <Title order={3} style={{ fontWeight: 600 }}>
+            Junte-se à Comunidade
+          </Title>
+          <Text size="md" c="dimmed" ta="center" w="60%">
+            Faça parte de um espaço onde o talento se transforma em arte, e a arte conecta pessoas.
+          </Text>
+          <Button size="lg" radius="xl" color="blue">
+            Criar conta
+          </Button>
+        </Flex>
+      </Container>
     </section>
   );
 }

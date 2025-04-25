@@ -1,26 +1,27 @@
 import CadastrarArtesanato from "./views/artesanatos/CadastrarArtesanato";
+import ListarArtesanatos from "./views/artesanatos/ListarArtesanatos";
+import ExibirArtesanato from "./views/artesanatos/ExibirArtesanato";
 import CadastrarUsuario from "./views/usuarios/CadastrarUsuario";
 import CadastrarArtesao from "./views/artesaos/CadastrarArtesao";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import ListarUsuarios from "./views/usuarios/ListarUsuarios";
 import ListarArtesaos from "./views/artesaos/ListarArtesaos";
+import EditarArtesao from "./views/artesaos/EditarArtesao";
 import EditarUsuario from "./views/usuarios/EditarUsuario";
 import ExibirArtesao from "./views/artesaos/ExibirArtesao";
 import Artesanatos from "./views/artesanatos/Artesanatos";
-import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "./views/root/RootLayout";
 import Teste from "./views/usuarios/Teste";
 import { Home } from "./views/home/Home";
 import Login from "./views/login/Login";
-import ExibirArtesanato from "./views/artesanatos/ExibirArtesanato";
-import ListarArtesanatos from "./views/artesanatos/ListarArtesanatos";
-import EditarArtesao from "./views/artesaos/EditarArtesao";
 
 const router = createBrowserRouter([
   {
-    //path: "/",
+    path: "/",
     element: <RootLayout />,
     children: [
-      { index: true, path: "Home", element: <Home /> },
+      { index: true, element: <Navigate to="/Home" /> }, // Redireciona de "/" para "/Home"
+      { path: "Home", element: <Home /> },
 
       { path: "CadastrarUsuario", element: <CadastrarUsuario /> },
       { path: "ListarUsuarios", element: <ListarUsuarios /> },

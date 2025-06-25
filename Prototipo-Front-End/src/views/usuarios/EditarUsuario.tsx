@@ -1,4 +1,4 @@
-import { listarUsuarios } from "../../services/Api";
+import { listarUsuarios } from "../../services/UsuarioService";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {

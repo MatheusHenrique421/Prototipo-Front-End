@@ -14,6 +14,7 @@ import RootLayout from "./views/root/RootLayout";
 import Teste from "./views/usuarios/Teste";
 import { Home } from "./views/home/Home";
 import Login from "./views/login/Login";
+import Logout from "./views/login/Logout";
 
 const router = createBrowserRouter([
   {
@@ -28,7 +29,7 @@ const router = createBrowserRouter([
       { path: "EditarUsuario", element: <EditarUsuario /> },
 
       { path: "ListarArtesaos", element: <ListarArtesaos /> },
-      { path: "CadastrarArtesao/:id", element: <CadastrarArtesao /> },
+      { path: "CadastrarArtesao", element: <CadastrarArtesao /> },
       { path: "EditarArtesao/:id", element: <EditarArtesao /> },
       { path: "ExibirArtesao/:id", element: <ExibirArtesao /> },
 
@@ -43,6 +44,11 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
+  {
+    path: "/logout",
+    element: <Logout />,
+  },
+  
 ]);
 
 export default router;

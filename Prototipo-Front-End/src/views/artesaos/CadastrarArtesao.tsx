@@ -3,29 +3,30 @@ import ArtesaoForm from "../../components/ArtesaoForm";
 
 export default function CadastrarArtesao() {
   const initialArtesao: ArtesaoModel = {
-    id: "",
-    usuarioId: "",
-    nomeArtesao: "",
-    telefone: "",
-    whatsApp: "",
-    descricaoPerfil: "",
-    receberEncomendas: false,
-    enviaEncomendas: false,
-    imagemUrl: [],
-    imagem: null,
+    Id: "",
+    UsuarioId: "",
+    NomeArtesao: "",
+    Telefone: "",
+    WhatsApp: "",
+    DescricaoPerfil: "",
+    ReceberEncomendas: false,
+    EnviaEncomendas: false,
+    //ImagemUrl: [],
+    Imagem: null,
     CEP: "",
-    estado: "",
-    cidade: "",
-    rua: "",
-    bairro: "",
-    complemento: "",
-    numero: "",
-    semNumero: false,
-    dataCadastro: new Date(),
+    Estado: "",
+    Cidade: "",
+    Rua: "",
+    Bairro: "",
+    Complemento: "",
+    Numero: "",
+    SemNumero: false,
+    DataCadastro: new Date(),
+    FotoUrl: ""
   };
 
   const handleSubmit = (artesaoAtualizado: ArtesaoModel) => {
-    console.log("cADASTAR ARTESP TE;AA:", artesaoAtualizado);
+    console.log("Cadastro ARTESÃO:", artesaoAtualizado);
   };
 
   return <ArtesaoForm artesao={initialArtesao} onSubmit={handleSubmit} />;

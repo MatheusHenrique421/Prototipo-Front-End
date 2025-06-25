@@ -2,10 +2,7 @@ import { ArtesaoFormProps, ArtesaoModel } from "../models/ArtesaoModel";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-import {
-  atualizaArtesao,
-  cadastrarArtesao,
-} from "../services/Api";
+import { atualizaArtesao, cadastrarArtesao } from "../services/ArtesaoService";
 
 import {
   Container,
@@ -22,48 +19,56 @@ import {
   FileInputProps,
   Pill,
 } from "@mantine/core";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
-  const [, setImagemUrl] = useState<string | null>(null);
+  const [, setFotoUrl] = useState<string | null>(null);
   const usuarioId = localStorage.getItem("usuarioId");
   const [, setErrorMessage] = useState<string>("");
-  const navigate = useNavigate();    
+  const navigate = useNavigate();
+ // const isEditing = artesao.Id;
+  const MySwal = withReactContent(Swal);
 
-  useParams<{ id: string; }>(); // Captura o ID da rota
-  //const isEditing = !!id; // Define se está em modo de edição
+  useParams<{ id: string }>();
 
   const [artesaoState, setArtesaoState] = useState<ArtesaoModel>({
     ...artesao,
-    id: artesao.id || "",
-    nomeArtesao: artesao.nomeArtesao || "",
-    telefone: artesao.telefone || "",
-    whatsApp: artesao.whatsApp || "",
-    descricaoPerfil: artesao.descricaoPerfil || "",
-    usuarioId: usuarioId || "",
-    receberEncomendas: artesao.receberEncomendas || false,
-    enviaEncomendas: artesao.enviaEncomendas || false,
-    imagem: artesao.imagem || null,
-    imagemUrl: artesao.imagemUrl || "",
+    Id: String(artesao.Id) || "00000000-0000-0000-0000-000000000000",
+    NomeArtesao: artesao.NomeArtesao || "",
+    NomeCompleto: artesao.NomeCompleto || "",
+    Idade: artesao.Idade || 0,
+    Telefone: artesao.Telefone || "",
+    WhatsApp: artesao.WhatsApp || "",
+    Email: artesao.Email || "",
+    Instagram: artesao.Instagram || "",
+    Facebook: artesao.Facebook || "",
+    NichoAtuacao: artesao.NichoAtuacao || "",
+    DescricaoPerfil: artesao.DescricaoPerfil || "",
+    UsuarioId: usuarioId || "00cb252e-0310-41fe-8014-3549e7fa2b3f",
+    ReceberEncomendas: artesao.ReceberEncomendas || false,
+    LocalFisico: artesao.LocalFisico || false,
+    FeiraMunicipal: artesao.FeiraMunicipal || false,
+    EnviaEncomendas: artesao.EnviaEncomendas || false,
+    Imagem: artesao.Imagem || null,
+    FotoUrl: artesao.FotoUrl || "",
     CEP: artesao.CEP || "",
-    estado: artesao.estado || "",
-    cidade: artesao.cidade || "",
-    rua: artesao.rua || "",
-    bairro: artesao.bairro || "",
-    complemento: artesao.complemento || "",
-    numero: artesao.numero || "",
-    semNumero: artesao.semNumero || false,
+    Estado: artesao.Estado || "",
+    Cidade: artesao.Cidade || "",
+    Rua: artesao.Rua || "",
+    Bairro: artesao.Bairro || "",
+    Complemento: artesao.Complemento || "",
+    Numero: artesao.Numero || "",
+    SemNumero: artesao.SemNumero || false,
   });
-  const isEditing = artesao.id; // Define se está em modo de edição
 
   const handleFileChange = (file: File | null) => {
-    setArtesaoState((prevState) => ({ ...prevState, imagem: file }));
+    setArtesaoState((prevState) => ({ ...prevState, Imagem: file }));
   };
-
-  // Função para redimensionar a imagem
 
   const handleChange = (
     value: string | boolean | string[] | number | File | null,
-    id: keyof ArtesaoModel // 'keyof' garante que 'id' seja uma chave válida
+    id: keyof ArtesaoModel
   ) => {
     setArtesaoState((prevState) => ({
       ...prevState,
@@ -83,7 +88,7 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
         setArtesaoState((prevState) => ({
           ...prevState,
 
-          [id]: [file], // Armazena o arquivo como um array com 1 item (imagem)
+          [id]: file, // Armazena o arquivo como um array com 1 item (imagem)
         }));
       }
     } else {
@@ -125,10 +130,10 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
       if (!data.erro) {
         setArtesaoState((prevState) => ({
           ...prevState,
-          estado: data.uf,
-          cidade: data.localidade,
-          rua: data.logradouro,
-          bairro: data.bairro,
+          Estado: data.uf,
+          Cidade: data.localidade,
+          Rua: data.logradouro,
+          Bairro: data.bairro,
         }));
       } else {
         alert("CEP não encontrado!");
@@ -148,90 +153,199 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
   };
 
   useEffect(() => {
-    if (artesaoState.imagem instanceof File) {
-      const url = URL.createObjectURL(artesaoState.imagem);
-      setImagemUrl(url); // Atualiza apenas a URL da imagem
+    if (artesaoState.Imagem instanceof File) {
+      const url = URL.createObjectURL(artesaoState.Imagem);
+      setFotoUrl(url); // Atualiza apenas a URL da imagem
       return () => URL.revokeObjectURL(url); // Revoga a URL quando não for mais necessário
     }
-  }, [artesaoState.imagem]);
+  }, [artesaoState.Imagem]);
 
   // Função de submit para cadastrar o artesão
+  // const handleSubmit = async (event: React.FormEvent) => {
+  //   event.preventDefault();
+  //   const formData = new FormData();
+
+  //   console.log("Estado do artesão antes de enviar:", artesaoState);
+
+  //   // Adiciona todos os campos do artesaoState no FormData
+  //   Object.entries(artesaoState).forEach(([key, value]) => {
+  //     if (key === "Id") return; // Ignora o campo Id no cadastro
+
+  //     if (value instanceof File) {
+  //       formData.append(key, value);
+  //       console.log(`Arquivo adicionado [${key}]`, value);
+  //     } else if (Array.isArray(value)) {
+  //       value.forEach((item, index) => {
+  //         formData.append(`${key}[${index}]`, item);
+  //         console.log(`Item de array adicionado [${key}[${index}]]:`, item);
+  //       });
+  //     } else if (typeof value === "boolean") {
+  //       formData.append(key, value ? "true" : "false");
+  //       console.log(`Booleano adicionado [${key}]:`, value);
+  //     } else if (value !== null && value !== undefined) {
+  //       formData.append(key, value.toString());
+  //       console.log(`Valor adicionado [${key}]:`, value);
+  //     } else {
+  //       console.log(`Valor ignorado [${key}] porque é null/undefined`);
+  //     }
+  //   });
+
+  //   console.log(
+  //     "Tentando cadastrar Artesão dados de: artesaoState:",
+  //     JSON.stringify(artesaoState, null, 2)
+  //   );
+
+  //   try {
+  //     const idArtesao = artesaoState.Id;
+  //     const isValido = typeof idArtesao !== "undefined" && idArtesao !== null;
+
+  //     console.log("Modo de edição:", isEditing);
+  //     console.log("Estado do artesão:", artesaoState);
+
+  //     if (isEditing && isValido) {
+  //       console.log("Enviando atualização do artesão...");
+
+  //       await atualizaArtesao(idArtesao, formData); // Descomente quando a função estiver pronta
+
+  //       MySwal.fire({
+  //         title: <strong>Sucesso!</strong>,
+  //         html: <text>Artesão atualizado com sucesso!</text>,
+  //         icon: "success",
+  //         confirmButtonText: "Ok",
+  //       }).then(() => {
+  //         // Redireciona para a página de exibição do artesão atualizado
+  //         navigate(`/ExibirArtesao/${artesaoState.Id}`);
+  //       });
+
+  //       //console.log("Redirecionando para artesão com ID:", idArtesao);
+  //       //navigate(`/ExibirArtesao/${idArtesao}`);
+
+  //       console.log(
+  //         "Dados atualizados:",
+  //         JSON.stringify(artesaoState, null, 2)
+  //       );
+  //     } else {
+  //       console.log("Enviando novo cadastro...");
+
+  //       const novoArtesao = await cadastrarArtesao(artesaoState);
+
+  //       if (!novoArtesao || !novoArtesao.Id) {
+  //         throw new Error("Erro: resposta da API não contém um ID válido.");
+  //       }
+
+  //       MySwal.fire({
+  //         title: <strong>Sucesso!</strong>,
+  //         html: <text>Artesão cadastrado com sucesso!</text>,
+  //         icon: "success",
+  //         confirmButtonText: "Ok",
+  //       }).then(() => {
+  //         navigate(`/ExibirArtesao/${novoArtesao.Id}`);
+  //       });
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Erro ao salvar artesão:", error);
+  //     MySwal.fire({
+  //       title: <strong>Erro!</strong>,
+  //       html: (
+  //         <text>
+  //           Erro ao salvar artesão. Verifique os dados e tente novamente.
+  //         </text>
+  //       ),
+  //       icon: "error",
+  //       confirmButtonText: "Ok",
+  //     });
+  //     setErrorMessage(error.message || "Erro desconhecido.");
+  //   }
+  // };
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const formData = new FormData();
-
-  
-    console.log("Estado do artesão antes de enviar:", artesaoState);
-
-    // Verifica se a imagem foi definida e não é null ou undefined
-    if (artesaoState.imagem instanceof File) {
-      formData.append("imagem", artesaoState.imagem); // Adiciona a imagem ao FormData
-      console.log("Imagem adicionada:", artesaoState.imagem);
-    } else {
-      console.error("Imagem não é um arquivo válido.");
-    }
-
-    // Adicionando outros campos do artesão
-    Object.entries(artesaoState).forEach(([key, value]) => {
-      console.log(`Adicionando ${key}:`, value);      
-      // Verifica se o valor é um arquivo (File) e adiciona ao FormData
-      if (value instanceof File) {
-        formData.append(key, value); // Adiciona o arquivo
-      } else if (Array.isArray(value)) {
-        // Se o valor for um array, você pode querer mapear ou lidar de outra maneira
-        value.forEach((item) => formData.append(key, item));
-      } else {
-        // Para qualquer outro tipo de dado, simplesmente adiciona como string ou número
-        formData.append(key, value);
-      }
-    });
-
-    console.log(
-      "Tentando cadastrar Artesão dados de: artesaoState:",
-      JSON.stringify(artesaoState, null, 2)
-    );    
-
-    if (isEditing) {
-      await atualizaArtesao(artesaoState.id, formData);
-    } else {
-      await cadastrarArtesao(artesao);
-    }
 
     try {
-      console.log("isEditing && artesaoState.id", isEditing, artesaoState.id);
-      if (isEditing) {
-        console.log(
-          "TENTANDO ENVIAR O FORM DATA:",
-          JSON.stringify(formData, null, 2)
+      if (!artesaoState.Imagem) {
+        MySwal.fire({
+          title: "Atenção!",
+          html: "Por favor, adicione pelo menos uma imagem do artesão.",
+          icon: "warning",
+          confirmButtonText: "Ok",
+        });
+        return;
+      }
+
+      const artesaoParaEnvio: ArtesaoModel = { ...artesaoState };
+
+      // 🔍 Debug: verificar dados antes do envio
+      console.log("🔍 Estado atual do artesão:", artesaoState);
+      console.log("🔍 Dados para envio:", artesaoParaEnvio);
+
+      // ✅ Verificar se é atualização ou cadastro
+      const isUpdate =
+        artesaoState.Id &&
+        artesaoState.Id !== "00000000-0000-0000-0000-000000000000";
+
+      let artesaoResultado: ArtesaoModel;
+
+      if (isUpdate) {
+        // ✅ Atualizar artesão existente
+        console.log("🔄 Atualizando artesão com ID:", artesaoState.Id);
+        artesaoResultado = await atualizaArtesao(
+          artesaoState.Id,
+          artesaoParaEnvio
         );
-        await atualizaArtesao(artesaoState.id, formData); // Atualizar com FormData
-        alert("Cadastro atualizado com sucesso!");
-        navigate(`/ExibirArtesao/${artesaoState.id}`);
-        console.log(
-          "Usuário ATUALIZADO com sucesso. Dados retornados da API:",
-          JSON.stringify(artesaoState, null, 2)
-        );
+
+        MySwal.fire({
+          title: "Sucesso!",
+          html: "Artesão atualizado com sucesso!",
+          icon: "success",
+          confirmButtonText: "Ok",
+        }).then(() => {
+          navigate(`/ExibirArtesao/${artesaoState.Id}`);
+        });
       } else {
-        await cadastrarArtesao(artesao); // Criar novo cadastro
-        alert("Cadastro criado com sucesso!");
-        // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
-        navigate(`/ExibirArtesao/${artesaoState.id}`);
-        // console.log(
-        //   "Usuário cadastrado com sucesso. Dados retornados da API:",
-        //   JSON.stringify(artesao, null, 2)
-        // );
-        console.log(
-          "Usuário CADASTRADO com sucesso. Dados retornados da API:",
-          JSON.stringify(artesao, null, 2)
-        );
+        // ✅ Cadastrar novo artesão - REMOVER O ID
+        console.log("➕ Cadastrando novo artesão");
+
+        // Criar cópia sem o Id para cadastro
+        const artesaoParaCadastro = { ...artesaoParaEnvio };
+
+        console.log("📤 Enviando para cadastro (sem Id):", artesaoParaCadastro);
+
+        artesaoResultado = await cadastrarArtesao(artesaoParaCadastro);
+
+        MySwal.fire({
+          title: "Sucesso!",
+          html: "Artesão cadastrado com sucesso!",
+          icon: "success",
+          confirmButtonText: "Ok",
+        }).then(() => {
+          navigate(`/ExibirArtesao/${artesaoResultado.Id}`);
+        });
       }
     } catch (error: any) {
-      setErrorMessage(error.message);
-      alert("Erro ao salvar. Verifique os dados e tente novamente.");
-      console.error("Erro ao salvar artesão:", error);
-      //console.log("Tamanho da string base64:", artesao.imagem.length);
-      console.error("Erro ao cadastrar Artesão:", error.message || error);
-      console.log(artesao);
+      const isUpdate =
+        artesaoState.Id &&
+        artesaoState.Id !== null &&
+        artesaoState.Id !== "00000000-0000-0000-0000-000000000000";
+      const operacao = isUpdate ? "atualizar" : "cadastrar";
+
+      console.error(`❌ Erro ao ${operacao}:`, error);
+
+      if (error.message) {
+        setErrorMessage(error.message);
+        MySwal.fire({
+          title: `Erro ao ${operacao}:`,
+          html: `${error.message}`,
+          icon: "error",
+          confirmButtonText: "Ok",
+        });
+      } else {
+        setErrorMessage(`Erro desconhecido ao ${operacao} artesão`);
+        MySwal.fire({
+          title: "Erro desconhecido:",
+          html: `Erro desconhecido ao ${operacao} artesão. Tente novamente.`,
+          icon: "error",
+          confirmButtonText: "Ok",
+        });
+      }
     }
   };
 
@@ -307,18 +421,18 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                       alignItems: "center",
                     }}
                   >
-                    {artesaoState.imagem && (
+                    {artesaoState.Imagem && (
                       <Avatar
                         variant="default"
                         radius="xl"
                         size={100} // Tamanho fixo, mas você pode ajustar conforme a necessidade
                         //src={URL.createObjectURL(artesao.imagem)}
                         src={
-                          artesaoState.imagem instanceof File
-                            ? URL.createObjectURL(artesaoState.imagem)
-                            : Array.isArray(artesaoState.imagemUrl)
-                            ? artesaoState.imagemUrl[0] // Usa o primeiro valor se for um array
-                            : artesaoState.imagemUrl
+                          artesaoState.Imagem instanceof File
+                            ? URL.createObjectURL(artesaoState.Imagem)
+                            : Array.isArray(artesaoState.FotoUrl)
+                            ? artesaoState.FotoUrl // Usa o primeiro valor se for um array
+                            : artesaoState.FotoUrl
                         }
                         alt="Imagem do artesão"
                         style={{
@@ -348,20 +462,42 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                 <InputBase
                   w={350}
                   radius="md"
-                  label="Nome do perfil:"
-                  placeholder="Nome do perfil"
+                  label="Nome Completo:"
+                  placeholder="Nome Completo"
                   type="text"
-                  id="nomeArtesao"
-                  value={artesaoState.nomeArtesao}
-                  onChange={(e) => handleChange(e.target.value, "nomeArtesao")}
+                  id="NomeCompleto"
+                  value={artesaoState.NomeCompleto}
+                  onChange={(e) => handleChange(e.target.value, "NomeCompleto")}
                   required
+                />
+                <InputBase
+                  w={300}
+                  radius="md"
+                  label="Idade:"
+                  id="Idade"
+                  value={artesaoState.Idade || ""}
+                  placeholder="21"
+                  onChange={handleInputChange}
+                  maxLength={2}
+                  type="number"
                 />
                 <InputBase
                   w={350}
                   radius="md"
+                  label="Nome do perfil:"
+                  placeholder="Nome do perfil"
+                  type="text"
+                  id="NomeArtesao"
+                  value={artesaoState.NomeArtesao}
+                  onChange={(e) => handleChange(e.target.value, "NomeArtesao")}
+                  required
+                />
+                <InputBase
+                  w={300}
+                  radius="md"
                   label="Telefone:"
-                  id="telefone"
-                  value={artesaoState.telefone || ""}
+                  id="Telefone"
+                  value={artesaoState.Telefone || ""}
                   placeholder="(99) 9 9999-9999"
                   onChange={handleInputChange}
                   maxLength={15}
@@ -371,23 +507,67 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                   w={300}
                   radius="md"
                   label="Whats App:"
-                  id="whatsApp"
-                  value={artesaoState.whatsApp || ""}
+                  id="WhatsApp"
+                  value={artesaoState.WhatsApp || ""}
                   placeholder="(99) 9 9999-9999"
                   onChange={handleInputChange}
                   maxLength={15}
                   //mask="(99) 99999-9999"
                 />
+                <InputBase
+                  w={300}
+                  radius="md"
+                  label="E-mail:"
+                  id="Email"
+                  value={artesaoState.Email || ""}
+                  placeholder="email@exemplo.com"
+                  onChange={handleInputChange}
+                  maxLength={50}
+                  //mask="(99) 99999-9999"
+                />
+                <InputBase
+                  w={300}
+                  radius="md"
+                  label="Instagram:"
+                  id="Instagram"
+                  value={artesaoState.Instagram || ""}
+                  placeholder="https://www.instagram.com/usuario"
+                  onChange={handleInputChange}
+                  maxLength={50}
+                  //mask="(99) 99999-9999"
+                />
+                <InputBase
+                  w={300}
+                  radius="md"
+                  label="Facebook:"
+                  id="Facebook"
+                  value={artesaoState.Facebook || ""}
+                  placeholder="https://www.facebook.com/usuario"
+                  onChange={handleInputChange}
+                  maxLength={50}
+                  //mask="(99) 99999-9999"
+                />
               </SimpleGrid>
+              <InputBase
+                w={300}
+                radius="md"
+                label="Nicho de Atuacao:"
+                id="NichoAtuacao"
+                value={artesaoState.NichoAtuacao || ""}
+                placeholder="Nicho de atuação"
+                onChange={handleInputChange}
+                maxLength={50}
+              />
               <Textarea
                 radius="md"
                 label="Descrição:"
                 resize="vertical"
                 placeholder="Descreva sobre a sua marca. min 500 caracteres"
-                id="descricaoPerfil"
-                value={artesaoState.descricaoPerfil || ""}
+                id="DescricaoPerfil"
+                value={artesaoState.DescricaoPerfil || ""}
+                rows={5}
                 onChange={(e) =>
-                  handleChange(e.target.value, "descricaoPerfil")
+                  handleChange(e.target.value, "DescricaoPerfil")
                 }
                 required
               />
@@ -395,26 +575,46 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                 <SimpleGrid cols={2} spacing="sm">
                   <Checkbox
                     p="md"
-                    id="receberEncomendas"
+                    id="ReceberEncomendas"
                     label="Aceito receber encomendas."
-                    checked={artesaoState.receberEncomendas}
+                    checked={artesaoState.ReceberEncomendas}
                     onChange={(e) =>
-                      handleChange(e.target.checked, "receberEncomendas")
+                      handleChange(e.target.checked, "ReceberEncomendas")
                     }
                   />
                   <Checkbox
                     p="md"
-                    id="enviaEncomendas"
+                    id="EnviaEncomendas"
                     label="Aceita enviar encomendas."
-                    checked={artesaoState.enviaEncomendas}
+                    checked={artesaoState.EnviaEncomendas}
                     onChange={(e) =>
-                      handleChange(e.target.checked, "enviaEncomendas")
+                      handleChange(e.target.checked, "EnviaEncomendas")
                     }
                   />
                 </SimpleGrid>
               </Fieldset>
+
+              {/** Informações de endereço e atuação*/}
               <Fieldset legend="Informações de endereço">
-                <SimpleGrid cols={3} spacing="">
+                <SimpleGrid cols={2} mt={5} spacing="">
+                  <Checkbox
+                    label="Possui local físico"
+                    id="LocalFisico"
+                    checked={artesaoState.LocalFisico}
+                    onChange={(e) =>
+                      handleChange(e.target.checked, "LocalFisico")
+                    }
+                  />
+                  <Checkbox
+                    label="Feira Municipal"
+                    id="FeiraMunicipal"
+                    checked={artesaoState.FeiraMunicipal}
+                    onChange={(e) =>
+                      handleChange(e.target.checked, "FeiraMunicipal")
+                    }
+                  />
+                </SimpleGrid>
+                <SimpleGrid cols={3} mt={5} spacing="">
                   <TextInput
                     w={110}
                     required
@@ -437,9 +637,9 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                     label="Estado:"
                     placeholder="Selecione"
                     type="text"
-                    id="estado"
-                    value={artesaoState.estado || ""}
-                    onChange={(e) => handleChange(e.target.value, "estado")}
+                    id="Estado"
+                    value={artesaoState.Estado || ""}
+                    onChange={(e) => handleChange(e.target.value, "Estado")}
                   />
                   <TextInput
                     ml="-130px"
@@ -449,12 +649,12 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                     label="Cidade:"
                     placeholder="Selecione"
                     type="text"
-                    id="cidade"
-                    value={artesaoState.cidade || ""}
-                    onChange={(e) => handleChange(e.target.value, "cidade")}
+                    id="Cidade"
+                    value={artesaoState.Cidade || ""}
+                    onChange={(e) => handleChange(e.target.value, "Cidade")}
                   />
                 </SimpleGrid>
-                <SimpleGrid cols={5} spacing="xs">
+                <SimpleGrid cols={5} mt={5} spacing="xs">
                   <TextInput
                     w={150}
                     required
@@ -462,9 +662,9 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                     label="Rua:"
                     placeholder="Rua lorem ipsum"
                     type="text"
-                    id="rua"
-                    value={artesaoState.rua || ""}
-                    onChange={(e) => handleChange(e.target.value, "rua")}
+                    id="Rua"
+                    value={artesaoState.Rua || ""}
+                    onChange={(e) => handleChange(e.target.value, "Rua")}
                   />
                   <TextInput
                     w={150}
@@ -473,9 +673,9 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                     label="Bairro:"
                     placeholder="Bairro exemplo x"
                     type="text"
-                    id="bairro"
-                    value={artesaoState.bairro || ""}
-                    onChange={(e) => handleChange(e.target.value, "bairro")}
+                    id="Bairro"
+                    value={artesaoState.Bairro || ""}
+                    onChange={(e) => handleChange(e.target.value, "Bairro")}
                   />
                   <TextInput
                     w={150}
@@ -483,10 +683,10 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                     label="Complemento:"
                     placeholder="Apto x ou "
                     type="text"
-                    id="complemento"
-                    value={artesaoState.complemento || ""}
+                    id="Complemento"
+                    value={artesaoState.Complemento || ""}
                     onChange={(e) =>
-                      handleChange(e.target.value, "complemento")
+                      handleChange(e.target.value, "Complemento")
                     }
                   />
                   <TextInput
@@ -495,20 +695,23 @@ const ArtesaoForm: React.FC<ArtesaoFormProps> = ({ artesao }) => {
                     label="N°:"
                     placeholder="0000"
                     type="text"
-                    id="numero"
-                    value={artesaoState.numero || ""}
-                    onChange={(e) => handleChange(e.target.value, "numero")}
+                    id="Numero"
+                    value={artesaoState.Numero || ""}
+                    onChange={(e) => handleChange(e.target.value, "Numero")}
                   />
                   <Checkbox
                     p="xl"
                     ml="-100px"
                     label="Sem N°"
-                    id="semNumero"
-                    checked={artesaoState.semNumero}
-                    onChange={(e) => handleChange(e.target.value, "semNumero")}
+                    id="SemNumero"
+                    checked={artesaoState.SemNumero}
+                    onChange={(e) =>
+                      handleChange(e.target.checked, "SemNumero")}
                   />
                 </SimpleGrid>
               </Fieldset>
+              
+              {/** Informações de endereço e atuação*/}
               <Button m="md" type="submit" radius="md" color="green">
                 Salvar
               </Button>

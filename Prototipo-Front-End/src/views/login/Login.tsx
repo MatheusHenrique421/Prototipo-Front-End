@@ -1,6 +1,6 @@
-import { LoginModel } from "../../models/LoginModel";
+import { LoginRequest } from "../../models/LoginRequest";
+import { loginUsuario } from "../../services/AuthService";
 import { useNavigate } from "react-router-dom";
-import { loginUsuario } from "../../services/Api";
 import { FormEvent, useState } from "react";
 import {
   PasswordInput,
@@ -14,22 +14,27 @@ import {
   Title,
   Text,
 } from "@mantine/core";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+import { useAuth } from "../../context/AuthContext";
 
-const initialLoginState: LoginModel = {
-  usuarioId: "",
-  email: "",
-  senha: "",
-  token: "",
+const MySwal = withReactContent(Swal);
+
+const initialLoginState: LoginRequest = {
+  Email: "",
+  Senha: "",
+  Token: ""
 };
 
-export default function Login() {
-  const [login, setLogin] = useState<LoginModel>(initialLoginState);
+export default function login() {
+  const [loginData, setLogin] = useState<LoginRequest>(initialLoginState);
   const [erro] = useState("");
   const navigate = useNavigate();
+  const { login: loginFunc } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setLogin((prevLogin) => ({
+    setLogin((prevLogin: any) => ({
       ...prevLogin,
       [id]: value,
     }));
@@ -39,30 +44,47 @@ export default function Login() {
     event.preventDefault();
 
     try {
-      const data = await loginUsuario(login);
+      const data = await loginUsuario(loginData);
+      loginFunc(data.Token);
+            
+      MySwal.fire({
+        title: <strong>Login realizado!</strong>,
+        html: <text>Você será redirecionado para o cadastro de artesão.</text>,
+        icon: "success",
+        confirmButtonText: "Ok",
+      }).then(() => {
+        navigate("/CadastrarArtesao");
+      });
 
-      // Salve o ID ou token no localStorage ou estado global
-      localStorage.setItem("usuarioId", data.usuarioId); // Assumindo que o backend retorna o ID
+      console.log("loginData bem sucedido!", data);
 
-      alert("Login realizado com sucesso!");
-      console.log("Login bem sucedido!", data);
-      console.log("usuarioId:", data.usuarioId);
-
-      // Redirecionar para a página de cadastro (assumindo que a permissão já foi verificada)
-      navigate("/CadastrarArtesao");
     } catch (error) {
+
       console.error("Erro durante o login:", error);
-      // Exibir uma mensagem de erro mais amigável para o usuário
-      alert(
-        "Ocorreu um erro ao realizar o login. Por favor, tente novamente mais tarde."
-      );
+      let errorMessage = "Ocorreu um erro ao realizar o login. Por favor, tente novamente.";
+      if (error && typeof error === "object" && "message" in error) {
+        errorMessage += ` ${(error as { message?: string }).message}`;
+      }
+
+      MySwal.fire({
+        title: <strong>Erro ao realizar login!</strong>,
+        html: (
+          <text>
+            {errorMessage}
+          </text>
+        ),
+        icon: "error",
+        confirmButtonText: "Ok",
+      }).then(() => {
+        navigate("/login");
+      });
     }
   };
 
   return (
     <section>
       <Stack
-        h={900}
+        h="100vh"
         bg="var(--mantine-color-body)"
         align="Center"
         justify="center"
@@ -76,8 +98,8 @@ export default function Login() {
                 radius="md"
                 label="E-mail:"
                 placeholder="E-mail"
-                id="email"
-                value={login.email}
+                id="Email"
+                value={loginData.Email}
                 onChange={handleChange}
                 required
               />
@@ -87,8 +109,8 @@ export default function Login() {
                   radius="md"
                   label="Senha:"
                   placeholder="Senha"
-                  id="senha"
-                  value={login.senha}
+                  id="Senha"
+                  value={loginData.Senha}
                   onChange={handleChange}
                   required
                 />

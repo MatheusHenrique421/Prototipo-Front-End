@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import ListarArtesanatos from "../artesanatos/ListarArtesanatos";
 import {
   Container,
   Button,
@@ -8,148 +10,362 @@ import {
   Text,
   SimpleGrid,
   Badge,
-  NumberFormatter,
   Avatar,
   Stack,
   Title,
-  Divider,
+  Tooltip,
 } from "@mantine/core";
-import ListarArtesanatos from "../artesanatos/ListarArtesanatos";
+import { listarArtesanatos } from "../../services/ArtesanatoService";
+import { ArtesanatoModel } from "../../models/ArtesanatoModel";
+import { listarArtesaos } from "../../services/ArtesaoService";
+import { ArtesaoModel } from "../../models/ArtesaoModel";
+import { useState, useEffect, useMemo } from "react";
+import { useMediaQuery } from "@mantine/hooks";
+import { Carousel } from "@mantine/carousel";
+import styles from "./style.module.css";
 
 export function Home() {
+  const [artesanatos, setArtesanatos] = useState<ArtesanatoModel[]>([]);
+  const [artesaos, setArtesaos] = useState<ArtesaoModel[]>([]);
+  const [, setError] = useState<string | null>(null);
+  const [, setLoading] = useState<boolean>(true);
+
+  // Faz a requisição para buscar os artesanatos da API
+  useEffect(() => {
+    const fetchArtesanatos = async () => {
+      setLoading(true);
+      try {
+        const resposta = await listarArtesanatos();
+
+        // Garante que cada item tenha 'imagens' como array
+        const artesanatosTratados = resposta.map((item: ArtesanatoModel) => ({
+          ...item,
+          imagens: Array.isArray(item.ImagemUrl) ? item.ImagemUrl : [],
+        }));
+
+        setArtesanatos(artesanatosTratados);
+        setError(null);
+      } catch (erro: any) {
+        console.error("Erro ao buscar os artesanatos:", erro);
+        setError("Não foi possível carregar a lista de artesanatos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtesanatos();
+  }, []);
+
+  // Hook para buscar artesãos (adaptado do seu fetchArtesanatos)
+  useEffect(() => {
+    const fetchArtesaos = async () => {
+      setLoading(true);
+      try {
+        // Substitua 'listarArtesaos()' pela sua função de API
+        const resposta = await listarArtesaos(); // sua função de API aqui
+
+        // Tratamento dos dados se necessário (similar ao que você fez)
+        const artesaosTratados = resposta.map((item: ArtesaoModel) => ({
+          ...item,
+          // adicione qualquer tratamento específico aqui
+        }));
+
+        setArtesaos(artesaosTratados);
+        setError(null);
+      } catch (erro: any) {
+        console.error("Erro ao buscar os artesãos:", erro);
+        setError("Não foi possível carregar a lista de artesãos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtesaos();
+  }, []);
+
+  // Pega até 3 imagens (uma de cada artesanato)
+  const imagensArtesanatos = artesanatos
+    .slice(0, 3)
+    .map((artesanato) => artesanato.ImagemUrl?.[0])
+    .filter(Boolean);
+
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const categoriasUnicas = useMemo(() => {
+    return [
+      ...new Set(
+        artesanatos
+          .flatMap((artesanato) => artesanato.CategoriaTags || [])
+          .filter((tag) => tag && tag.trim() !== "")
+          .map((tag) => tag.trim().toUpperCase())
+      ),
+    ].sort();
+  }, [artesanatos]);
+
   return (
     <section style={{ backgroundColor: "#f8f9fa" }}>
       <Container size="lg" pt={60} pb={40}>
         {/* Hero Section */}
-        <Card shadow="lg" padding="xl" radius="lg" withBorder style={{ background: "white" }}>
-          <SimpleGrid cols={2} spacing="lg">
-            <div>
-              <Title order={1} style={{ fontSize: 40, color: "#1C1C1E" }}>
-                Bem-vindo à Galeria Artesanal
-              </Title>
-              <Text size="lg" c="dimmed" mt="md">
-                Uma curadoria de talentos, cores e histórias. Descubra o feito à mão com alma.
-              </Text>
-              <Button color="grape" radius="xl" size="lg" mt="xl">
-                Comece a explorar
-              </Button>
-            </div>
-            <Image
-              radius="md"
-               src="https://images.unsplash.com/photo-1579227114347-15d08fc37cae?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2550&q=80"
-              alt="Hero"
-            />           
-          </SimpleGrid>
-        </Card>
-
+        <Container fluid>
+          <Card
+            shadow="lg"
+            padding="xl"
+            radius="lg"
+            withBorder
+            style={{ background: "white" }}
+          >
+            <SimpleGrid
+              cols={{ base: 1, md: 2 }}
+              spacing="lg"
+              style={{ alignItems: "center" }}
+            >
+              <div>
+                <Title
+                  order={1}
+                  style={{
+                    fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
+                    color: "#1C1C1E",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Bem-vindo à Galeria Artesanal
+                </Title>
+                <Text
+                  size="lg"
+                  c="dimmed"
+                  mt="md"
+                  style={{ fontSize: "clamp(1rem, 2.5vw, 1.125rem)" }}
+                >
+                  Uma curadoria de talentos, cores e histórias. Descubra o feito
+                  à mão com alma.
+                </Text>
+                <Button                  
+                  size="md"
+                  mt="md"
+                  fw={700}
+                  style={{ maxWidth: "250px" }}
+                >
+                  <Link
+                    to="/ListarArtesaos"
+                    style={{ color: "white", textDecoration: "none" }}
+                  >
+                    Conheça os artesãos
+                  </Link>
+                </Button>
+              </div>
+              {/* Carrossel aqui */}
+              <Carousel
+                style={{ order: isMobile ? -1 : 0 }}
+                withIndicators
+                loop
+                classNames={{
+                  indicator: styles["carousel-indicator"],
+                  control: styles["carousel-control"],
+                }}
+              >
+                {imagensArtesanatos.map((imagem, index) => (
+                  <Carousel.Slide key={index}>
+                    <Image
+                      radius="md"
+                      src={imagem}
+                      alt={`Artesanato ${index + 1}`}
+                      style={{
+                        maxHeight: "300px",
+                        objectFit: "cover",
+                        width: "100%",
+                      }}
+                    />
+                  </Carousel.Slide>
+                ))}
+              </Carousel>
+            </SimpleGrid>
+          </Card>
+        </Container>
         {/* Destaques */}
-        <Title order={2} mt={80} mb={30} style={{ textAlign: "center", fontSize: 28 }}>
+        <Title
+          order={2}
+          mt={{ base: 40, md: 80 }}
+          mb={30}
+          style={{
+            textAlign: "center",
+            fontSize: "clamp(1.5rem, 4vw, 1.75rem)",
+          }}
+        >
           Destaques da Semana
         </Title>
-          <ListarArtesanatos/>
-        {/* <SimpleGrid cols={3} spacing="lg">
-          {[1, 2, 3].map((item) => (
-            <Card key={item} shadow="sm" padding="md" radius="md" withBorder>
-              <Card.Section>
-                <Image
-                  src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-                  height={160}
-                  alt="Destaque"
-                />
-              </Card.Section>
-              <Group justify="space-between" mt="lg" mb="sm">
-                <Badge color="grape">Exclusivo</Badge>
-                <Text size="sm" fw={700}>
-                  Artesão(a) Talento
-                </Text>
-              </Group>
-              <Text c="dimmed" size="sm">
-                Um trabalho delicado com materiais sustentáveis e técnicas ancestrais.
-              </Text>
-              <Text mt="md" fw={600}>
-                <NumberFormatter
-                  prefix="R$ "
-                  value={125}
-                  decimalSeparator=","
-                  decimalScale={2}
-                />
-              </Text>
-            </Card>
-          ))}
-        </SimpleGrid> */}
 
-        {/* Categorias */}
-        <Title order={2} mt={80} mb={30} style={{ textAlign: "center", fontSize: 28 }}>
+        {/* Container personalizado para ListarArtesanatos */}
+        <Container fluid>
+          <ListarArtesanatos />
+        </Container>
+
+        {/* Categorias em destaque*/}
+        <Title
+          order={2}
+          mt={{ base: 40, md: 80 }}
+          mb={30}
+          style={{
+            textAlign: "center",
+            fontSize: "clamp(1.5rem, 4vw, 1.75rem)",
+          }}
+        >
           Categorias em Destaque
         </Title>
-        <SimpleGrid cols={6} spacing="lg">
-          {["Cerâmica", "Têxtil", "Madeira", "Reciclado"].map((categoria) => (
-            <Card key={categoria} padding="lg" radius="md" shadow="md" withBorder>
-              <Group p="center">
-                <Avatar size="lg" radius="xl" src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png" />
-              </Group>
-              <Text ta="center" mt="sm" fw={700}>
+        {/* // ✅ Para o código das tags com tooltips: */}
+        <Group justify="center" gap="md">
+          {categoriasUnicas.map((categoria, index) => (
+            <Tooltip key={index} label={`Categoria: ${categoria}`} withArrow>
+              <Badge
+                variant="filled"
+                color="blue"
+                size="lg"
+                style={{ cursor: "pointer" }}
+              >
                 {categoria}
-              </Text>
-            </Card>
+              </Badge>
+            </Tooltip>
           ))}
-        </SimpleGrid>
+        </Group>
 
         {/* Publicações da Comunidade */}
-        <Title order={2} mt={80} mb={30} style={{ textAlign: "center", fontSize: 28 }}>
+        <Title
+          order={2}
+          mt={{ base: 40, md: 80 }}
+          mb={30}
+          style={{
+            textAlign: "center",
+            fontSize: "clamp(1.5rem, 4vw, 1.75rem)",
+          }}
+        >
           Da Comunidade Artesanal
         </Title>
-        <SimpleGrid cols={2} spacing="lg">
-          {[1, 2].map((publi) => (
-            <Card key={publi} shadow="sm" padding="lg" radius="md" withBorder>
-              <Group>
-                <Avatar src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png" size="sm" />
-                <Stack gap={0}>
-                  <Text fw={700}>Artesã Bruna</Text>
-                  <Text size="xs" c="dimmed">
-                    2h atrás - @arte_natural
-                  </Text>
-                </Stack>
-              </Group>
-              <Card.Section mt="sm">
-                <Image
-                  height={180}
-                  src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-                  alt="Publicação"
-                />
-              </Card.Section>
-              <Text mt="sm" size="sm" c="dimmed">
-                Uma nova coleção de mandalas pintadas à mão, inspiradas na natureza e espiritualidade.
-              </Text>
-              <Group mt="md" justify="space-between">
-                <Badge color="teal">Pintura</Badge>
-                <Text fw={600}>
-                  <NumberFormatter
-                    prefix="R$ "
-                    value={85}
-                    decimalSeparator=","
-                    decimalScale={2}
-                  />
-                </Text>
-              </Group>
-            </Card>
-          ))}
-        </SimpleGrid>
 
-        <Divider my={60} />
+        {/* Seção de Artesãos */}
+        <Container>
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+            {/* ✅ CORRIGIDO: Remover [artesaos] e usar artesaos.map */}
+            {artesaos.map((artesao) => (
+              <Card
+                key={artesao.Id} // ✅ CORRETO: usar artesao.Id
+                shadow="sm"
+                padding="lg"
+                radius="md"
+                withBorder
+                style={{ minHeight: "320px" }}
+              >
+                <Group mb="md">
+                  <Avatar
+                    src={
+                      artesao.FotoUrl ||
+                      "https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png"
+                    }
+                    size="sm"
+                  />
+                  <Stack gap={0}>
+                    <Text fw={700} size="sm">
+                      {artesao.NomeCompleto} {/* ✅ CORRETO: era artesao.Nme */}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      @{artesao.NomeArtesao}{" "}
+                      {/* ✅ CORRETO: era artesao.tempo e publi.usuario */}
+                    </Text>
+                  </Stack>
+                </Group>
+
+                <Card.Section>
+                  <Image
+                    height={180}
+                    src={
+                      artesao.FotoUrl ||
+                      "https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
+                    }
+                    alt="Artesão" // ✅ CORRETO: era "Publicação"
+                    style={{ objectFit: "cover" }}
+                  />
+                </Card.Section>
+
+                <Text mt="sm" size="sm" c="dimmed" lineClamp={3}>
+                  {artesao.DescricaoPerfil}{" "}
+                  {/* ✅ CORRETO: era publi.descricao */}
+                </Text>
+
+                <Group mt="md" justify="space-between">
+                  <Badge color="teal" variant="light">
+                    {artesao.NichoAtuacao}{" "}
+                    {/* ✅ CORRETO: era publi.categoria */}
+                  </Badge>
+                  <Text fw={600} color="grape">
+                    📍 {artesao.Cidade}, {artesao.Estado}{" "}
+                    {/* ✅ CORRETO: era preço formatado */}
+                  </Text>
+                </Group>
+
+                {/* Informações adicionais */}
+                <Group mt="xs" justify="space-between">
+                  <Text size="xs" c="dimmed">
+                    {artesao.Idade} anos
+                  </Text>
+                  <Group gap="xs">
+                    {artesao.ReceberEncomendas && (
+                      <Badge size="xs" color="green">
+                        Aceita Encomendas
+                      </Badge>
+                    )}
+                    {artesao.LocalFisico && (
+                      <Badge size="xs" color="blue">
+                        Loja Física
+                      </Badge>
+                    )}
+                  </Group>
+                </Group>
+              </Card>
+            ))}
+          </SimpleGrid>
+        </Container>
 
         {/* CTA Final */}
-        <Flex justify="center" direction="column" align="center" gap="md">
-          <Title order={3} style={{ fontWeight: 600 }}>
-            Junte-se à Comunidade
-          </Title>
-          <Text size="md" c="dimmed" ta="center" w="60%">
-            Faça parte de um espaço onde o talento se transforma em arte, e a arte conecta pessoas.
-          </Text>
-          <Button size="lg" radius="xl" color="blue">
-            Criar conta
-          </Button>
-        </Flex>
+        <Container fluid mt="xl">
+          <Flex
+            justify="center"
+            direction="column"
+            align="center"
+            gap="md"
+            style={{ textAlign: "center" }}
+          >
+            <Title
+              order={3}
+              style={{
+                fontWeight: 600,
+                fontSize: "clamp(1.25rem, 3vw, 1.5rem)",
+              }}
+            >
+              Junte-se à Comunidade
+            </Title>
+            <Text
+              size="md"
+              c="dimmed"
+              ta="center"
+              style={{
+                maxWidth: "500px",
+                fontSize: "clamp(0.875rem, 2vw, 1rem)",
+              }}
+            >
+              Faça parte de um espaço onde o talento se transforma em arte, e a
+              arte conecta pessoas.
+            </Text>
+            <Button
+              size="lg"
+              radius="xl"
+              color="blue"
+              style={{
+                minWidth: "200px",
+                fontSize: "1rem",
+              }}
+            >
+              Criar conta
+            </Button>
+          </Flex>
+        </Container>
       </Container>
     </section>
   );

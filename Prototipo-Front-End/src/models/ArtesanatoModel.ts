@@ -1,23 +1,25 @@
 export interface ArtesanatoModel {
-    id: string;
-    usuarioId: string;
-    artesaoId: string;
-    imagemUrl: string[];    
-    imagem: (string | File)[];
-    tituloArtesanato: string;
-    descricaoArtesanato: string;
-    sobEncomenda: boolean;
-    categoriaTags: string[];
-    preco: number;
-    quantidadeArtesanato: number;
-    larguraArtesanato: number;
-    alturaArtesanato: number;
-    comprimentoArtesanato: number;
-    pesoArtesanato: number;
-    dataCriacao: Date;
-    tempoCriacaoHr: string;
+    Id: string;
+    UsuarioId: string;
+    ArtesaoId: string;
+    ImagemUrl: string[];
+    Imagem: (string | File)[];
+    TituloArtesanato: string;
+    DescricaoArtesanato: string;
+    SobEncomenda: boolean;    
+    AceitaEncomenda: boolean;
+    CategoriaTags: string[];
+    Preco: number;
+    QuantidadeArtesanato: number;
+    MateriaisUtilizados: string;
+    DataCriacao: Date;
+    TempoCriacaoHr: string;
 }
 
+export interface ArtesanatoFormProps {
+    artesanato: ArtesanatoModel;
+    onSubmit: (artesanatoAtualizado: ArtesanatoModel) => void;
+}
 // Funções relacionadas ao modelo
 export const getHoraAtual = (): string => {
     const now = new Date();

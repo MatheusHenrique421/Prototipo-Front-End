@@ -1,16 +1,8 @@
-import { Container, Table, Loader, Text, Checkbox } from "@mantine/core";
-import { listarUsuarios } from "../../services/Api";
+import { Container, Table, Loader, Text } from "@mantine/core";
+import { listarUsuarios } from "../../services/UsuarioService";
 import { useEffect, useState } from "react";
+import { UsuarioModel } from "../../models/UsuarioModel";
 
-interface UsuarioModel {
-  id: string;
-  nome: string;
-  CPF: string;
-  email: string;
-  confirmaEmail: string;
-  receberEmail: boolean;
-  role: string;
-}
 export default function ListarUsuarios() {
   const [usuarios, setUsuarios] = useState<UsuarioModel[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,13 +30,9 @@ export default function ListarUsuarios() {
 
   // Renderiza as linhas da tabela
   const rows = usuarios.map((usuario) => (
-    <Table.Tr key={usuario.nome}>
-      <Table.Td>{usuario.nome}</Table.Td>
-      <Table.Td>{usuario.CPF || "CPF não disponivel"}</Table.Td>
-      <Table.Td>{usuario.email}</Table.Td>
-      <Table.Td>
-        <Checkbox checked={usuario.receberEmail} readOnly />
-      </Table.Td>
+    <Table.Tr key={usuario.Nome}>
+      <Table.Td>{usuario.Nome}</Table.Td>      
+      <Table.Td>{usuario.Email}</Table.Td>      
     </Table.Tr>
   ));
 

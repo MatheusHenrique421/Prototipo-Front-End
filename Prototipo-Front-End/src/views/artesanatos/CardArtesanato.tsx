@@ -80,9 +80,11 @@ export default function CardArtesanato({
       </Card.Section>
 
       {/* TITULO */}
-      <Text fw={500} ta="center" size={isCompact ? "sm" : "md"}>
-        {artesanato.TituloArtesanato}
-      </Text>
+      <Tooltip label={artesanato.TituloArtesanato}>
+        <Text fw={500} ta="center" size={isCompact ? "sm" : "md"} truncate="end" title={artesanato.TituloArtesanato}>
+          {artesanato.TituloArtesanato}
+        </Text>
+      </Tooltip>
 
       {/* TAGS COM TOOLTIPS */}
       {artesanato?.CategoriaTags?.length > 0 && (

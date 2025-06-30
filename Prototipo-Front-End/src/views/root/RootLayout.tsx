@@ -1,148 +1,3 @@
-// import { useAuth } from "../../context/AuthContext";
-// import { Link, Outlet } from "react-router-dom";
-// import classes from "./style.module.css";
-// import {
-//   AppShellHeader,
-//   UnstyledButton,
-//   Container,
-//   AppShell,
-//   Group,
-//   Text,
-//   Flex,
-//   Menu,
-//   Title,
-// } from "@mantine/core";
-
-
-// export default function RootLayout() {
-//   const { isAuthenticated } = useAuth();
-//   return (
-//     <AppShell
-//       header={{ height: 80 }}
-//       padding="md"
-//       withBorder={false}
-//       styles={{
-//         root: {
-//           display: "flex",
-//           flexDirection: "column",
-//           minHeight: "100vh",
-//         },
-//         main: {
-//           backgroundColor: "#f9f9f9",
-//           flex: 1,
-//           display: "flex",
-//           flexDirection: "column",
-//         },
-//       }}
-//     >      
-//       <AppShellHeader h={60} style={{ backgroundColor: "#eeeeee" }}>
-//         <Container size="xl" mt={5} h="60%">
-//           <Group justify="space-between" mt={5} align="center" h="60%">
-//             <Title order={3} style={{ fontFamily: "Georgia, serif" }}>
-//               Curadoria Artesanal
-//             </Title>
-//             <Group gap="xs">
-//               <UnstyledButton
-//                 component={Link}
-//                 to="/"
-//                 className={classes.control}
-//               >
-//                 Início
-//               </UnstyledButton>
-
-//               <Menu>
-//                 <Menu.Target>
-//                   <UnstyledButton className={classes.control}>
-//                     Artesãos
-//                   </UnstyledButton>
-//                 </Menu.Target>
-//                 <Menu.Dropdown>
-//                   {isAuthenticated && (
-//                     <Menu.Item component={Link} to="/CadastrarArtesao">
-//                       Cadastrar
-//                     </Menu.Item>
-//                   )}
-//                   <Menu.Item component={Link} to="/ListarArtesaos">
-//                     Ver Todos
-//                   </Menu.Item>
-//                 </Menu.Dropdown>
-//               </Menu>
-
-//               <Menu>
-//                 <Menu.Target>
-//                   <UnstyledButton className={classes.control}>
-//                     Artesanatos
-//                   </UnstyledButton>
-//                 </Menu.Target>
-//                 <Menu.Dropdown>
-//                   {isAuthenticated && (
-//                     <Menu.Item component={Link} to="/CadastrarArtesanato">
-//                       Cadastrar
-//                     </Menu.Item>
-//                   )}
-//                   <Menu.Item component={Link} to="/ListarArtesanatos">
-//                     Listar
-//                   </Menu.Item>
-//                 </Menu.Dropdown>
-//               </Menu>
-
-//               <Menu>
-//                 <Menu.Target>
-//                   <UnstyledButton className={classes.control}>
-//                     Conta
-//                   </UnstyledButton>
-//                 </Menu.Target>
-//                 <Menu.Dropdown>
-//                   {!isAuthenticated && (
-//                     <Menu.Item component={Link} to="/Login">
-//                       Login
-//                     </Menu.Item>
-//                   )}
-//                   {isAuthenticated && (
-//                     <Menu.Item component={Link} to="/Logout">
-//                       Logout
-//                     </Menu.Item>
-//                   )}
-//                 </Menu.Dropdown>
-//               </Menu>
-//             </Group>
-//           </Group>
-//         </Container>
-//       </AppShellHeader>
-
-//       <AppShell.Main mt={0} style={{ flex: 1, padding: "5%" }}>
-//         <Container
-//           size="xl"
-//           style={{ flex: 1, display: "flex", flexDirection: "column" }}
-//         >
-//           <Outlet />
-//         </Container>
-//       </AppShell.Main>
-
-//       <footer
-//         style={{
-//           backgroundColor: "#eeeeee",
-//           padding: "var(--mantine-spacing-lg)",
-//           marginTop: "auto",
-//         }}
-//       >
-//         <Container size="xl">
-//           <Flex justify="space-between" align="center">
-//             <Text size="sm">
-//               © {new Date().getFullYear()} Curadoria Artesanal. Todos os
-//               direitos reservados.
-//             </Text>
-//             <Group>
-//               <Text size="sm">Termos de Uso</Text>
-//               <Text size="sm">Política de Privacidade</Text>
-//             </Group>
-//           </Flex>
-//         </Container>
-//       </footer>
-//     </AppShell>
-//   );
-// }
-
 import { useAuth } from "../../context/AuthContext";
 import { Link, Outlet } from "react-router-dom";
 import classes from "./style.module.css";
@@ -176,15 +31,19 @@ export default function RootLayout() {
     {
       title: "Artesãos",
       items: [
-        ...(isAuthenticated ? [{ title: "Cadastrar", link: "/CadastrarArtesao" }] : []),
+        ...(isAuthenticated
+          ? [{ title: "Cadastrar", link: "/CadastrarArtesao" }]
+          : []),
         { title: "Ver Todos", link: "/ListarArtesaos" },
       ],
     },
     {
       title: "Artesanatos",
       items: [
-        ...(isAuthenticated ? [{ title: "Cadastrar", link: "/CadastrarArtesanato" }] : []),
-        { title: "Listar", link: "/ListarArtesanatos" },
+        ...(isAuthenticated
+          ? [{ title: "Cadastrar", link: "/CadastrarArtesanato" }]
+          : []),
+        { title: "Ver Todos", link: "/ListarArtesanatos" },
       ],
     },
     {
@@ -218,11 +77,11 @@ export default function RootLayout() {
       <AppShellHeader h={60} style={{ backgroundColor: "#eeeeee" }}>
         <Container size="xl" mt={5} h="60%">
           <Group justify="space-between" mt={5} align="center" h="60%">
-            <Title 
-              order={3} 
-              style={{ 
+            <Title
+              order={3}
+              style={{
                 fontFamily: "Georgia, serif",
-                fontSize: "clamp(1rem, 4vw, 1.5rem)"
+                fontSize: "clamp(1rem, 4vw, 1.5rem)",
               }}
             >
               Curadoria Artesanal
@@ -269,30 +128,33 @@ export default function RootLayout() {
                     </Menu.Item>
                   )}
                   <Menu.Item component={Link} to="/ListarArtesanatos">
-                    Listar
+                    Ver Todos
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
 
-              <Menu>
-                <Menu.Target>
-                  <UnstyledButton className={classes.control}>
-                    Conta
-                  </UnstyledButton>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  {!isAuthenticated && (
-                    <Menu.Item component={Link} to="/Login">
-                      Login
-                    </Menu.Item>
-                  )}
-                  {isAuthenticated && (
-                    <Menu.Item component={Link} to="/Logout">
-                      Logout
-                    </Menu.Item>
-                  )}
-                </Menu.Dropdown>
-              </Menu>
+              {/* // Só mostra se showAccountMenu for true */}
+              {isAuthenticated && (
+                <Menu>
+                  <Menu.Target>
+                    <UnstyledButton className={classes.control}>
+                      Conta
+                    </UnstyledButton>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {!isAuthenticated && (
+                      <Menu.Item component={Link} to="/Login">
+                        Login
+                      </Menu.Item>
+                    )}
+                    {isAuthenticated && (
+                      <Menu.Item component={Link} to="/Logout">
+                        Logout
+                      </Menu.Item>
+                    )}
+                  </Menu.Dropdown>
+                </Menu>
+              )}
             </Group>
 
             {/* Menu Mobile */}
@@ -343,21 +205,21 @@ export default function RootLayout() {
         </Stack>
       </Drawer>
 
-      <AppShell.Main 
-        mt={0} 
-        style={{ 
-          flex: 1, 
-          padding: "clamp(1rem, 5vw, 5%)"
+      <AppShell.Main
+        mt={0}
+        style={{
+          flex: 1,
+          padding: "clamp(1rem, 5vw, 5%)",
         }}
       >
         <Container
           size="xl"
-          style={{ 
-            flex: 1, 
-            display: "flex", 
+          style={{
+            flex: 1,
+            display: "flex",
             flexDirection: "column",
             width: "100%",
-            maxWidth: "100%"
+            maxWidth: "100%",
           }}
         >
           <Outlet />
@@ -372,22 +234,17 @@ export default function RootLayout() {
         }}
       >
         <Container size="xl">
-          <Flex 
-            justify="space-between" 
+          <Flex
+            justify="space-between"
             align="center"
             direction={{ base: "column", sm: "row" }}
             gap="sm"
           >
-            <Text 
-              size="sm"
-              ta={{ base: "center", sm: "left" }}
-            >
+            <Text size="sm" ta={{ base: "center", sm: "left" }}>
               © {new Date().getFullYear()} Curadoria Artesanal. Todos os
               direitos reservados.
             </Text>
-            <Group 
-              gap="md"              
-            >
+            <Group gap="md">
               <Text size="sm" style={{ cursor: "pointer" }}>
                 Termos de Uso
               </Text>

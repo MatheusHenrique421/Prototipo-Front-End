@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ListarArtesanatos from "../artesanatos/ListarArtesanatos";
 import {
   Container,
@@ -23,12 +23,12 @@ import { useState, useEffect, useMemo } from "react";
 import { useMediaQuery } from "@mantine/hooks";
 import { Carousel } from "@mantine/carousel";
 import styles from "./style.module.css";
-
 export function Home() {
   const [artesanatos, setArtesanatos] = useState<ArtesanatoModel[]>([]);
   const [artesaos, setArtesaos] = useState<ArtesaoModel[]>([]);
   const [, setError] = useState<string | null>(null);
   const [, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   // Faz a requisição para buscar os artesanatos da API
   useEffect(() => {
@@ -102,6 +102,11 @@ export function Home() {
     ].sort();
   }, [artesanatos]);
 
+  // Função para navegar para o artesão
+  const handleArtesaoClick = (artesaoId: string) => {
+    navigate(`/ExibirArtesao/${artesaoId}`);
+  };
+
   return (
     <section style={{ backgroundColor: "#f8f9fa" }}>
       <Container size="lg" pt={60} pb={40}>
@@ -139,7 +144,7 @@ export function Home() {
                   Uma curadoria de talentos, cores e histórias. Descubra o feito
                   à mão com alma.
                 </Text>
-                <Button                  
+                <Button
                   size="md"
                   mt="md"
                   fw={700}
@@ -196,7 +201,7 @@ export function Home() {
 
         {/* Container personalizado para ListarArtesanatos */}
         <Container fluid>
-          <ListarArtesanatos />
+          <ListarArtesanatos isHomePage={true} maxItems={3}/>
         </Container>
 
         {/* Categorias em destaque*/}
@@ -244,6 +249,7 @@ export function Home() {
         <Container>
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
             {/* ✅ CORRIGIDO: Remover [artesaos] e usar artesaos.map */}
+
             {artesaos.map((artesao) => (
               <Card
                 key={artesao.Id} // ✅ CORRETO: usar artesao.Id
@@ -251,7 +257,23 @@ export function Home() {
                 padding="lg"
                 radius="md"
                 withBorder
-                style={{ minHeight: "320px" }}
+                style={{
+                  minHeight: "320px",
+                  cursor: "pointer", // Indica que é clicável
+                  transition: "transform 0.2s ease", // Efeito suave
+                }}
+                // Adiciona o evento de clique no card inteiro
+                onClick={() => handleArtesaoClick(artesao.Id)}
+                // Efeito hover opcional
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(0,0,0,0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               >
                 <Group mb="md">
                   <Avatar

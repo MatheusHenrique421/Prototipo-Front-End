@@ -236,7 +236,7 @@ export default function ListarArtesanatos({
 
     return (
       <SimpleGrid cols={getColumns()} spacing={getSpacing()}>
-        {artesanatosFiltrados.slice(-3).map((artesanato) => (
+        {artesanatosFiltrados.map((artesanato) => (
           <CardArtesanato key={artesanato.Id} artesanato={artesanato} />
         ))}
       </SimpleGrid>
@@ -246,32 +246,10 @@ export default function ListarArtesanatos({
   // Se for homepage, não usa Container próprio
   if (isHomePage) {
     return (
-      <Container>
-        {showTitle && (
-          <Title order={2} size="h2" mb="md">
-            Explore por artesanatos
-          </Title>
-        )}
-        {/* Componente de Filtro */}
-        <ArtesanatoFiltro
-          filtros={filtros}
-          onFiltrosChange={setFiltros}
-          onFiltrar={aplicarFiltros}
-          onLimparFiltros={limparFiltros}
-          dadosSelect={dadosSelect}
-          loading={loading}
-        />
-        {renderContent()}
-      </Container>
-    );
-  }
-
-  // Para página dedicada, mantém Container
-  return (
-    <Container size="xl" py="xl">
+     <Container size="xl" py="xl">
       {/* {showTitle && (
         <Title order={2} size="h2" mb="xl">
-          Explore por artesanatosaa
+          Explore por artesanatos
         </Title>
       )} */}
       {/* Componente de Filtro */}
@@ -282,7 +260,29 @@ export default function ListarArtesanatos({
         onLimparFiltros={limparFiltros}
         dadosSelect={dadosSelect}
         loading={loading}
-      /> */}
+      />  */}
+      {renderContent()}
+    </Container>
+    );
+  }
+
+  // Para página dedicada, mantém Container
+  return (
+    <Container size="xl" py="xl">
+      {showTitle && (
+        <Title order={2} size="h2" mb="xl">
+          Explore por artesanatos
+        </Title>
+      )}
+      {/* Componente de Filtro */}
+      <ArtesanatoFiltro
+        filtros={filtros}
+        onFiltrosChange={setFiltros}
+        onFiltrar={aplicarFiltros}
+        onLimparFiltros={limparFiltros}
+        dadosSelect={dadosSelect}
+        loading={loading}
+      /> 
       {renderContent()}
     </Container>
   );
